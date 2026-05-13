@@ -852,16 +852,17 @@ async function ensureValidToken(){
 
 // ── 登入/登出 ──────────────────────────────────────────
 
-// 靜默嘗試登入（頁面載入或帳號登入後呼叫）
+// 登入後嘗試取得 Token（先靜默，失敗則自動彈出授權視窗）
 async function trySilentSignIn(){
   if(!db.settings.clientId)return;
-  // 先恢復上次的 email 顯示（即使 token 還沒拿到）
+  // 先恢復上次的 email 顯示
   const savedEmail=localStorage.getItem(GDRIVE_EMAIL_KEY);
   if(savedEmail){gEmail=savedEmail;updateDriveUI();}
-  // 等 GIS 載入
+  // 等 GIS 載入（最多等 5 秒）
   if(typeof google==='undefined'||!google.accounts){
-    setTimeout(trySilentSignIn, 1000); return;
+    setTimeout(trySilentSignIn, 800); return;
   }
+  // 第一步：嘗試靜默授權（不彈視窗）
   try{
     const tc=google.accounts.oauth2.initTokenClient({
       client_id:db.settings.clientId,
@@ -869,7 +870,45 @@ async function trySilentSignIn(){
       prompt:'none',
       callback:async(resp)=>{
         if(resp.error){
-          // 靜默授權失敗 — email 仍顯示（讓用戶知道上次有連結過），但 token 無效
+          // 靜默失敗（常見原因：瀏覽器沒有快取）
+          // 若有儲存的 email，自動改用彈窗授權，不需用戶手動按
+          if(savedEmail){
+            console.log('[Drive] 靜默失敗，自動改用彈窗授權...');
+            autoSignInWithPopup();
+          } else {
+            updateSyncPill('local');
+          }
+          return;
+        }
+        setToken(resp.access_token);
+        await fetchGEmail();
+        updateDriveUI();
+        await autoLoadFromDrive();
+      }
+    });
+    tc.requestAccessToken();
+  }catch(e){
+    console.warn('[Drive] 靜默登入失敗：',e);
+    if(savedEmail) autoSignInWithPopup();
+  }
+}
+
+// 自動彈窗授權（靜默失敗後的備案，會彈出 Google 視窗）
+function autoSignInWithPopup(){
+  if(!db.settings.clientId)return;
+  if(typeof google==='undefined')return;
+  try{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:db.settings.clientId,
+      scope:GDRIVE_SCOPE,
+      // 不設 prompt:'none'，讓 Google 自己決定要不要彈視窗
+      // 若用戶已登入 Google 且授權過，通常不會彈，直接成功
+      callback:async(resp)=>{
+        if(resp.error){
+          // 連彈窗也失敗，才顯示「請手動連結」
+          gEmail=null;
+          localStorage.removeItem(GDRIVE_EMAIL_KEY);
+          updateDriveUI();
           updateSyncPill('local');
           return;
         }
@@ -880,7 +919,10 @@ async function trySilentSignIn(){
       }
     });
     tc.requestAccessToken();
-  }catch(e){console.warn('[Drive] 靜默登入失敗：',e);}
+  }catch(e){
+    console.warn('[Drive] 彈窗授權失敗：',e);
+    updateSyncPill('local');
+  }
 }
 
 // 手動連結 Google 帳號
@@ -926,7 +968,7 @@ function updateDriveUI(){
   const sbD=document.getElementById('sbDrive');
   if(gEmail){
     const connected=!!gToken;
-    if(row)row.innerHTML=`<span>${connected?'🟢':'🟡'}</span><span>${connected?'已連結：'+gEmail:'上次連結：'+gEmail+'（Token 重新整理中...）'}</span>`;
+    if(row)row.innerHTML=`<span>${connected?'🟢':'🟡'}</span><span>${connected?'已連結：'+gEmail:'重新連結中：'+gEmail+'（請稍候...）'}</span>`;
     if(sinBtn)sinBtn.style.display= connected?'none':'inline-flex';
     if(soutBtn)soutBtn.style.display='inline-flex';
     if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color=connected?'var(--green)':'var(--amber)';}
