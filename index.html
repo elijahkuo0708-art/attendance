@@ -853,16 +853,15 @@ async function ensureValidToken(){
 // ── 登入/登出 ──────────────────────────────────────────
 
 // 登入後嘗試取得 Token（先靜默，失敗則自動彈出授權視窗）
+// 登入後嘗試取得 Token
+// 策略：靜默授權失敗 → 顯示「點一下重新連結」按鈕，不自動彈窗（避免被瀏覽器封鎖）
 async function trySilentSignIn(){
   if(!db.settings.clientId)return;
-  // 先恢復上次的 email 顯示
   const savedEmail=localStorage.getItem(GDRIVE_EMAIL_KEY);
   if(savedEmail){gEmail=savedEmail;updateDriveUI();}
-  // 等 GIS 載入（最多等 5 秒）
   if(typeof google==='undefined'||!google.accounts){
     setTimeout(trySilentSignIn, 800); return;
   }
-  // 第一步：嘗試靜默授權（不彈視窗）
   try{
     const tc=google.accounts.oauth2.initTokenClient({
       client_id:db.settings.clientId,
@@ -870,59 +869,42 @@ async function trySilentSignIn(){
       prompt:'none',
       callback:async(resp)=>{
         if(resp.error){
-          // 靜默失敗（常見原因：瀏覽器沒有快取）
-          // 若有儲存的 email，自動改用彈窗授權，不需用戶手動按
-          if(savedEmail){
-            console.log('[Drive] 靜默失敗，自動改用彈窗授權...');
-            autoSignInWithPopup();
-          } else {
-            updateSyncPill('local');
-          }
+          // 靜默失敗 → 顯示一鍵重連提示
+          if(savedEmail) showReconnectBanner(savedEmail);
+          else updateSyncPill('local');
           return;
         }
         setToken(resp.access_token);
         await fetchGEmail();
         updateDriveUI();
+        hideReconnectBanner();
         await autoLoadFromDrive();
       }
     });
     tc.requestAccessToken();
   }catch(e){
-    console.warn('[Drive] 靜默登入失敗：',e);
-    if(savedEmail) autoSignInWithPopup();
+    if(savedEmail) showReconnectBanner(savedEmail);
+    else updateSyncPill('local');
   }
 }
 
-// 自動彈窗授權（靜默失敗後的備案，會彈出 Google 視窗）
-function autoSignInWithPopup(){
-  if(!db.settings.clientId)return;
-  if(typeof google==='undefined')return;
-  try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:db.settings.clientId,
-      scope:GDRIVE_SCOPE,
-      // 不設 prompt:'none'，讓 Google 自己決定要不要彈視窗
-      // 若用戶已登入 Google 且授權過，通常不會彈，直接成功
-      callback:async(resp)=>{
-        if(resp.error){
-          // 連彈窗也失敗，才顯示「請手動連結」
-          gEmail=null;
-          localStorage.removeItem(GDRIVE_EMAIL_KEY);
-          updateDriveUI();
-          updateSyncPill('local');
-          return;
-        }
-        setToken(resp.access_token);
-        await fetchGEmail();
-        updateDriveUI();
-        await autoLoadFromDrive();
-      }
-    });
-    tc.requestAccessToken();
-  }catch(e){
-    console.warn('[Drive] 彈窗授權失敗：',e);
-    updateSyncPill('local');
+// 顯示一鍵重連提示（固定在頂部，不擋操作）
+function showReconnectBanner(email){
+  let banner=document.getElementById('reconnectBanner');
+  if(!banner){
+    banner=document.createElement('div');
+    banner.id='reconnectBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9990;background:#f59e0b;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;font-family:Noto Sans TC,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+    document.body.appendChild(banner);
   }
+  banner.innerHTML=`<span style="flex:1">☁️ Google Drive 需要重新授權（${email}）才能同步資料</span>
+    <button onclick="gSignIn()" style="background:#fff;color:#d97706;border:none;border-radius:8px;padding:7px 16px;font-weight:700;cursor:pointer;font-family:Noto Sans TC,sans-serif;font-size:13px">點此重新連結</button>
+    <button onclick="hideReconnectBanner()" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:7px 12px;cursor:pointer;font-family:Noto Sans TC,sans-serif;font-size:12px">略過</button>`;
+  updateSyncPill('local');
+}
+function hideReconnectBanner(){
+  const b=document.getElementById('reconnectBanner');
+  if(b)b.remove();
 }
 
 // 手動連結 Google 帳號
@@ -937,6 +919,7 @@ function gSignIn(){
       setToken(resp.access_token);
       await fetchGEmail();
       updateDriveUI();
+      hideReconnectBanner();
       toast('已連結 '+gEmail,'success');
       await autoLoadFromDrive();
     }
@@ -966,13 +949,21 @@ function updateDriveUI(){
   const row=document.getElementById('driveStatusRow');
   const sinBtn=document.getElementById('gSignInBtn'),soutBtn=document.getElementById('gSignOutBtn');
   const sbD=document.getElementById('sbDrive');
-  if(gEmail){
-    const connected=!!gToken;
-    if(row)row.innerHTML=`<span>${connected?'🟢':'🟡'}</span><span>${connected?'已連結：'+gEmail:'重新連結中：'+gEmail+'（請稍候...）'}</span>`;
-    if(sinBtn)sinBtn.style.display= connected?'none':'inline-flex';
+  if(gToken&&gEmail){
+    // Token 有效：完全連結
+    if(row)row.innerHTML=`<span>🟢</span><span>已連結：${gEmail}</span>`;
+    if(sinBtn)sinBtn.style.display='none';
     if(soutBtn)soutBtn.style.display='inline-flex';
-    if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color=connected?'var(--green)':'var(--amber)';}
+    if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color='var(--green)';}
+    hideReconnectBanner();
+  } else if(gEmail&&!gToken){
+    // 有 email 但 token 無效：需要重連
+    if(row)row.innerHTML=`<span>🟡</span><span>需要重新授權：${gEmail}</span>`;
+    if(sinBtn)sinBtn.style.display='inline-flex';
+    if(soutBtn)soutBtn.style.display='inline-flex';
+    if(sbD){sbD.textContent='☁️ 需重新連結';sbD.style.color='var(--amber)';}
   } else {
+    // 完全未連結
     if(row)row.innerHTML=`<span>⚪</span><span>尚未連結 Google 帳號</span>`;
     if(sinBtn)sinBtn.style.display='inline-flex';
     if(soutBtn)soutBtn.style.display='none';
