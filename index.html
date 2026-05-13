@@ -713,7 +713,9 @@ async function enterApp(u){
 function doLogout(){
   showModal('確認登出','確定要登出嗎？本機資料會保留。',()=>{
     closeModal();CU=null;clearSession();
-    gToken=null;gEmail=null;
+    clearTimeout(_refreshTimer);
+    gToken=null;gEmail=null;_tokenExpiry=0;
+    localStorage.removeItem(GDRIVE_EMAIL_KEY);
     document.getElementById('appPage').style.display='none';
     document.getElementById('loginPage').style.display='flex';
     document.getElementById('loginPwd').value='';
@@ -733,32 +735,115 @@ async function changePwd(){
 // ═══════════════════════════════════
 // Google Drive 全自動同步
 // ═══════════════════════════════════
-let gToken=null,gEmail=null,gTokenClient=null;
+// ═══════════════════════════════════════════════════════
+// Google Drive 同步 — 修正版
+// 解決：① Token 過期 → 自動刷新  ② 重新整理後連結消失 → email 存 localStorage
+// ═══════════════════════════════════════════════════════
+let gToken=null, gEmail=null, gTokenClient=null;
+let _tokenExpiry=0;        // Token 到期時間（ms timestamp）
+let _refreshTimer=null;    // 自動刷新計時器
 
-// 靜默嘗試登入（不彈出視窗）
-async function trySilentSignIn(){
-  if(!db.settings.clientId)return;
-  if(typeof google==='undefined'||!google.accounts)return;
+const GDRIVE_EMAIL_KEY='atd_gdrive_email'; // 持久化儲存 email，重新整理後恢復顯示
+
+// ── Token 管理 ────────────────────────────────────────
+
+// 儲存 token 並設定到期時間與自動刷新
+function setToken(token, expiresInSec=3600){
+  gToken=token;
+  _tokenExpiry=Date.now()+(expiresInSec-120)*1000; // 提前 2 分鐘視為過期
+  scheduleTokenRefresh(expiresInSec-120);
+}
+
+// 排程在過期前自動靜默刷新 token
+function scheduleTokenRefresh(delaySec){
+  clearTimeout(_refreshTimer);
+  _refreshTimer=setTimeout(()=>{
+    console.log('[Drive] Token 即將過期，靜默刷新中...');
+    silentRefreshToken();
+  }, Math.max(delaySec*1000, 10000)); // 至少 10 秒後才刷新
+}
+
+// 靜默刷新（不彈出任何視窗）
+function silentRefreshToken(){
+  if(!db.settings.clientId||typeof google==='undefined')return;
   try{
-    // 用 prompt:'' 靜默嘗試，若有快取的 token 就成功
-    gTokenClient=google.accounts.oauth2.initTokenClient({
+    const tc=google.accounts.oauth2.initTokenClient({
       client_id:db.settings.clientId,
       scope:GDRIVE_SCOPE,
-      prompt:'none', // 不顯示視窗
+      prompt:'none',
+      callback:(resp)=>{
+        if(resp.error){
+          console.warn('[Drive] 靜默刷新失敗：',resp.error);
+          gToken=null; updateSyncPill('local'); updateDriveUI();
+          return;
+        }
+        setToken(resp.access_token);
+        updateSyncPill('synced');
+        console.log('[Drive] Token 刷新成功');
+      }
+    });
+    tc.requestAccessToken();
+  }catch(e){console.warn('[Drive] 靜默刷新異常：',e);}
+}
+
+// 確保 token 有效（若過期則等待刷新後回傳）
+async function ensureValidToken(){
+  if(!gToken) return false;
+  if(Date.now()<_tokenExpiry) return true; // 還沒過期
+  // 已過期，嘗試同步刷新（最多等 5 秒）
+  return new Promise(resolve=>{
+    if(!db.settings.clientId||typeof google==='undefined'){resolve(false);return;}
+    try{
+      const tc=google.accounts.oauth2.initTokenClient({
+        client_id:db.settings.clientId,
+        scope:GDRIVE_SCOPE,
+        prompt:'none',
+        callback:(resp)=>{
+          if(resp.error){gToken=null;resolve(false);return;}
+          setToken(resp.access_token);
+          resolve(true);
+        }
+      });
+      tc.requestAccessToken();
+      setTimeout(()=>resolve(!!gToken),5000); // 5秒 timeout
+    }catch{resolve(false);}
+  });
+}
+
+// ── 登入/登出 ──────────────────────────────────────────
+
+// 靜默嘗試登入（頁面載入或帳號登入後呼叫）
+async function trySilentSignIn(){
+  if(!db.settings.clientId)return;
+  // 先恢復上次的 email 顯示（即使 token 還沒拿到）
+  const savedEmail=localStorage.getItem(GDRIVE_EMAIL_KEY);
+  if(savedEmail){gEmail=savedEmail;updateDriveUI();}
+  // 等 GIS 載入
+  if(typeof google==='undefined'||!google.accounts){
+    setTimeout(trySilentSignIn, 1000); return;
+  }
+  try{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:db.settings.clientId,
+      scope:GDRIVE_SCOPE,
+      prompt:'none',
       callback:async(resp)=>{
-        if(resp.error)return; // 靜默失敗，正常，不提示
-        gToken=resp.access_token;
+        if(resp.error){
+          // 靜默授權失敗 — email 仍顯示（讓用戶知道上次有連結過），但 token 無效
+          updateSyncPill('local');
+          return;
+        }
+        setToken(resp.access_token);
         await fetchGEmail();
         updateDriveUI();
-        // 自動從 Drive 載入最新資料
         await autoLoadFromDrive();
       }
     });
-    gTokenClient.requestAccessToken();
-  }catch{}
+    tc.requestAccessToken();
+  }catch(e){console.warn('[Drive] 靜默登入失敗：',e);}
 }
 
-// 使用者手動點「連結 Google 帳號」
+// 手動連結 Google 帳號
 function gSignIn(){
   if(!db.settings.clientId){toast('請先填入 Client ID','error');document.getElementById('clientIdInp').focus();return;}
   if(typeof google==='undefined'){toast('Google 登入元件尚未載入，請稍後再試','error');return;}
@@ -767,7 +852,7 @@ function gSignIn(){
     scope:GDRIVE_SCOPE,
     callback:async(resp)=>{
       if(resp.error){toast('Google 登入失敗：'+resp.error,'error');return;}
-      gToken=resp.access_token;
+      setToken(resp.access_token);
       await fetchGEmail();
       updateDriveUI();
       toast('已連結 '+gEmail,'success');
@@ -779,23 +864,32 @@ function gSignIn(){
 
 function gSignOut(){
   if(gToken)google.accounts.oauth2.revoke(gToken,()=>{});
-  gToken=null;gEmail=null;updateDriveUI();updateSyncPill('local');toast('已取消連結 Google 帳號','info');
+  clearTimeout(_refreshTimer);
+  gToken=null;gEmail=null;_tokenExpiry=0;
+  localStorage.removeItem(GDRIVE_EMAIL_KEY);
+  updateDriveUI();updateSyncPill('local');
+  toast('已取消連結 Google 帳號','info');
 }
 
 async function fetchGEmail(){
-  try{const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+gToken}});const d=await r.json();gEmail=d.email||'已連結';}catch{gEmail='已連結';}
+  try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+gToken}});
+    const d=await r.json();
+    gEmail=d.email||'已連結';
+    localStorage.setItem(GDRIVE_EMAIL_KEY, gEmail); // 持久化
+  }catch{gEmail='已連結';}
 }
 
 function updateDriveUI(){
-  const row=document.getElementById('driveStatusRow'),txt=document.getElementById('driveStatusTxt');
+  const row=document.getElementById('driveStatusRow');
   const sinBtn=document.getElementById('gSignInBtn'),soutBtn=document.getElementById('gSignOutBtn');
   const sbD=document.getElementById('sbDrive');
   if(gEmail){
-    if(row)row.innerHTML=`<span>🟢</span><span>已連結：${gEmail}</span>`;
-    if(txt)txt.textContent='已連結：'+gEmail;
-    if(sinBtn)sinBtn.style.display='none';
+    const connected=!!gToken;
+    if(row)row.innerHTML=`<span>${connected?'🟢':'🟡'}</span><span>${connected?'已連結：'+gEmail:'上次連結：'+gEmail+'（Token 重新整理中...）'}</span>`;
+    if(sinBtn)sinBtn.style.display= connected?'none':'inline-flex';
     if(soutBtn)soutBtn.style.display='inline-flex';
-    if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color='var(--green)';}
+    if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color=connected?'var(--green)':'var(--amber)';}
   } else {
     if(row)row.innerHTML=`<span>⚪</span><span>尚未連結 Google 帳號</span>`;
     if(sinBtn)sinBtn.style.display='inline-flex';
@@ -804,9 +898,9 @@ function updateDriveUI(){
   }
 }
 
-// 找到或建立 Drive 檔案
+// ── Drive 檔案操作 ────────────────────────────────────
+
 async function getOrCreateDriveFile(){
-  // 找資料夾
   let folderId=db._driveFolderId||null;
   if(!folderId){
     const fs=await gFetch(`https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(GDRIVE_FOLDER)}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`);
@@ -814,7 +908,6 @@ async function getOrCreateDriveFile(){
     else{const cf=await gFetch('https://www.googleapis.com/drive/v3/files',{method:'POST',body:JSON.stringify({name:GDRIVE_FOLDER,mimeType:'application/vnd.google-apps.folder'})});folderId=cf.id;}
     db._driveFolderId=folderId;
   }
-  // 找檔案
   let fileId=db._driveFileId||null;
   if(!fileId){
     const ff=await gFetch(`https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FILENAME}' and '${folderId}' in parents and trashed=false&fields=files(id)`);
@@ -823,24 +916,34 @@ async function getOrCreateDriveFile(){
   return{folderId,fileId};
 }
 
-async function gFetch(url,opts={}){
+// gFetch：自動處理 401/403，嘗試刷新 token 後重試一次
+async function gFetch(url,opts={},retry=true){
+  const ok=await ensureValidToken();
+  if(!ok)throw new Error('Token 無效，請重新連結 Google 帳號');
   const headers={'Authorization':'Bearer '+gToken,'Content-Type':'application/json',...(opts.headers||{})};
   const res=await fetch(url,{...opts,headers});
+  if((res.status===401||res.status===403)&&retry){
+    // Token 可能剛過期，強制刷新後重試一次
+    gToken=null;_tokenExpiry=0;
+    const refreshed=await ensureValidToken();
+    if(refreshed)return gFetch(url,opts,false); // 只重試一次
+    throw new Error('Drive API 403：授權已過期，請重新連結 Google 帳號');
+  }
   if(!res.ok)throw new Error('Drive API '+res.status);
   return res.json();
 }
 
-// 自動從 Drive 載入（登入後）
+// 自動從 Drive 載入
 async function autoLoadFromDrive(){
   if(!gToken)return;
   showSyncOverlay('正在從 Google Drive 同步資料...');
   try{
     const{fileId,folderId}=await getOrCreateDriveFile();
     if(fileId){
+      const ok=await ensureValidToken();if(!ok)throw new Error('token invalid');
       const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
       if(res.ok){
         const data=await res.json();
-        // 合併：以 Drive 資料為主，保留 clientId
         const clientId=db.settings.clientId;
         db={...mkDB(),...data};
         db.settings.clientId=clientId;
@@ -852,18 +955,17 @@ async function autoLoadFromDrive(){
         updateSbUser();
       }
     } else {
-      // Drive 上還沒有檔案，把本機資料存上去
       await driveUpload(folderId,null);
       updateSyncPill('synced');
     }
     updateLastSyncInfo();
   }catch(e){
     updateSyncPill('local');
-    console.warn('Drive sync failed:',e);
+    console.warn('[Drive] 自動載入失敗：',e);
   }finally{hideSyncOverlay();}
 }
 
-// 自動儲存到 Drive（每次 saveDB 後呼叫）
+// 自動儲存（每次 saveDB 後，debounce 1.5 秒）
 let _saveTimer=null;
 async function autoSaveToDrive(){
   if(!gToken||!CU)return;
@@ -874,44 +976,72 @@ async function autoSaveToDrive(){
       const{fileId,folderId}=await getOrCreateDriveFile();
       await driveUpload(folderId,fileId);
       db._lastDriveSave=new Date().toISOString();
-      saveUDB(CU,db); // 更新 fileId
+      saveUDB(CU,db);
       updateSyncPill('synced');
       updateLastSyncInfo();
-    }catch(e){updateSyncPill('local');console.warn('Auto save failed:',e);}
-  },1500); // 1.5秒 debounce，避免頻繁寫入
+    }catch(e){
+      updateSyncPill('local');
+      console.warn('[Drive] 自動儲存失敗：',e);
+      // 若是 token 問題，提示用戶
+      if(e.message.includes('403')||e.message.includes('token')){
+        toast('Google Drive 連線過期，請前往「☁️ Google Drive 設定」重新連結','info');
+      }
+    }
+  },1500);
 }
 
 async function driveUpload(folderId,fileId){
+  const ok=await ensureValidToken();if(!ok)throw new Error('token invalid');
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
   if(fileId){
     const res=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:blob});
-    if(!res.ok)throw new Error('Upload failed');
+    if(res.status===401||res.status===403){gToken=null;_tokenExpiry=0;throw new Error('Drive API 403');}
+    if(!res.ok)throw new Error('Upload failed '+res.status);
   } else {
-    const fm=new FormData();fm.append('metadata',new Blob([JSON.stringify({name:GDRIVE_FILENAME,parents:[folderId]})],{type:'application/json'}));fm.append('file',blob);
+    const fm=new FormData();
+    fm.append('metadata',new Blob([JSON.stringify({name:GDRIVE_FILENAME,parents:[folderId]})],{type:'application/json'}));
+    fm.append('file',blob);
     const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+gToken},body:fm});
-    if(!res.ok)throw new Error('Upload failed');
+    if(res.status===401||res.status===403){gToken=null;_tokenExpiry=0;throw new Error('Drive API 403');}
+    if(!res.ok)throw new Error('Upload failed '+res.status);
     const data=await res.json();db._driveFileId=data.id;
   }
 }
 
 // 手動儲存
 async function manualSave(){
-  if(!gToken){toast('請先連結 Google 帳號','error');return;}
+  if(!gToken){
+    // 嘗試重新連結
+    toast('正在重新連結 Google 帳號...','info');
+    gSignIn(); return;
+  }
   showSyncOverlay('正在儲存到 Google Drive...');
-  try{const{fileId,folderId}=await getOrCreateDriveFile();await driveUpload(folderId,fileId);db._lastDriveSave=new Date().toISOString();saveUDB(CU,db);updateSyncPill('synced');updateLastSyncInfo();toast('已儲存到 Google Drive ✓','success');}
-  catch(e){toast('儲存失敗：'+e.message,'error');}
+  try{
+    const{fileId,folderId}=await getOrCreateDriveFile();
+    await driveUpload(folderId,fileId);
+    db._lastDriveSave=new Date().toISOString();saveUDB(CU,db);
+    updateSyncPill('synced');updateLastSyncInfo();
+    toast('已儲存到 Google Drive ✓','success');
+  }catch(e){toast('儲存失敗：'+e.message,'error');}
   finally{hideSyncOverlay();}
 }
+
 // 手動讀取
 async function manualLoad(){
   if(!gToken){toast('請先連結 Google 帳號','error');return;}
   showModal('確認讀取','從 Google Drive 讀取資料會覆蓋目前本機資料，確定繼續？',async()=>{
     closeModal();showSyncOverlay('正在從 Google Drive 讀取...');
-    try{const{fileId}=await getOrCreateDriveFile();if(!fileId){toast('Drive 上尚無資料','info');hideSyncOverlay();return;}
-    const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
-    if(!res.ok){toast('讀取失敗','error');hideSyncOverlay();return;}
-    const data=await res.json();const cid=db.settings.clientId;db={...mkDB(),...data};db.settings.clientId=cid;db._driveFileId=fileId;saveUDB(CU,db);updateSyncPill('synced');renderCurrentPage();updateSbUser();updateLastSyncInfo();toast('已從 Drive 讀取資料 ✓','success');}
-    catch(e){toast('讀取失敗：'+e.message,'error');}
+    try{
+      const{fileId}=await getOrCreateDriveFile();
+      if(!fileId){toast('Drive 上尚無資料','info');hideSyncOverlay();return;}
+      const ok=await ensureValidToken();if(!ok)throw new Error('token invalid');
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
+      if(!res.ok){toast('讀取失敗 '+res.status,'error');hideSyncOverlay();return;}
+      const data=await res.json();
+      const cid=db.settings.clientId;db={...mkDB(),...data};db.settings.clientId=cid;db._driveFileId=fileId;
+      saveUDB(CU,db);updateSyncPill('synced');renderCurrentPage();updateSbUser();updateLastSyncInfo();
+      toast('已從 Drive 讀取資料 ✓','success');
+    }catch(e){toast('讀取失敗：'+e.message,'error');}
     finally{hideSyncOverlay();}
   });
 }
