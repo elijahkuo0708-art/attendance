@@ -351,7 +351,7 @@ tr:hover td{background:var(--bg3);}
                 <option value="funeral3">喪假（父母/配偶/子女）8天</option>
                 <option value="funeral6">喪假（祖父母/孫子女/兄弟姊妹）6天</option>
                 <option value="funeral1">喪假（曾祖父母/配偶祖父母）1天</option>
-                <option value="public">公假</option><option value="typhoon">天災假</option><option value="unpaid">留職停薪</option>
+                <option value="public">公假</option><option value="typhoon">天災假</option><option value="unpaid">留職停薪</option><option value="monthly_personal">事假（每月2次×2小時，不扣薪）</option>
               </select>
             </div>
             <div class="form-group"><label>開始日期</label><input type="date" id="leaveStart" oninput="calcLeaveDays()"></div>
@@ -378,15 +378,45 @@ tr:hover td{background:var(--bg3);}
     <!-- Overtime -->
     <div class="page" id="page-overtime">
       <div class="ot-summary" id="otSummary"></div>
+
+      <!-- 申請補休 -->
+      <div class="card gap" style="border:2px solid var(--teal-bdr);background:var(--teal-bg)">
+        <div class="card-title" style="color:var(--teal)">🏖 申請補休（從加班餘額扣除）</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>補休日期</label><input type="date" id="compDate" oninput="calcCompSources()"></div>
+            <div class="form-group"><label>時段</label>
+              <select id="compPeriod" onchange="calcCompSources()">
+                <option value="morning">上午</option>
+                <option value="afternoon">下午</option>
+                <option value="fullday">全天</option>
+                <option value="custom">自訂時數</option>
+              </select>
+            </div>
+          </div>
+          <div id="compCustomRow" style="display:none" class="form-row">
+            <div class="form-group"><label>自訂時數（小時）</label><input type="number" id="compCustomH" min="0.5" step="0.5" oninput="calcCompSources()"></div>
+          </div>
+          <div class="form-group"><label>備註</label><textarea id="compNote" placeholder="選填"></textarea></div>
+          <!-- 即時來源明細 -->
+          <div id="compSourcePreview"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" style="background:var(--teal)" onclick="submitComp()">✅ 送出補休申請</button>
+            <button class="btn btn-ghost" onclick="clearCompForm()">清除</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 加班流程 -->
       <div class="card gap" style="border:2px solid var(--amber-bdr);background:var(--amber-bg)">
-        <div class="card-title" style="color:var(--amber)">📌 加班流程</div>
+        <div class="card-title" style="color:var(--amber)">📌 記錄加班流程</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px">① 在下方填寫加班資訊（本系統做紀錄）<br>② 按「前往公司申請加班」在公司系統完成正式申請<br>③ 回來按「記錄加班，存入補休」</p>
         <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="text-decoration:none">
           <button class="btn btn-primary" style="background:var(--amber);font-size:14px;padding:12px 24px">🏢 前往公司申請加班</button>
         </a>
       </div>
       <div class="card gap">
-        <div class="card-title">➕ 記錄加班（轉補休）</div>
+        <div class="card-title">➕ 記錄加班（自動計算時數，存入補休）</div>
         <div class="form-grid">
           <div class="form-row">
             <div class="form-group"><label>加班日期</label><input type="date" id="otDate"></div>
@@ -403,9 +433,17 @@ tr:hover td{background:var(--bg3);}
           <button class="btn btn-primary" onclick="submitOT()">記錄加班，存入補休</button>
         </div>
       </div>
+
+      <!-- 補休紀錄 -->
+      <div class="card gap">
+        <div class="card-title">🏖 補休紀錄（含來源明細）</div>
+        <div class="table-wrap"><table><thead><tr><th>補休日期</th><th>時段</th><th>時數</th><th>來源加班（哪天哪個時段）</th><th>備註</th><th></th></tr></thead><tbody id="compBody"></tbody></table></div>
+      </div>
+
+      <!-- 加班紀錄 -->
       <div class="card">
-        <div class="card-title">📋 加班紀錄</div>
-        <div class="table-wrap"><table><thead><tr><th>日期</th><th>類型</th><th>實際加班</th><th>換算補休</th><th>事由</th><th></th></tr></thead><tbody id="otBody"></tbody></table></div>
+        <div class="card-title">📋 加班紀錄（時間明細）</div>
+        <div class="table-wrap"><table><thead><tr><th>日期</th><th>類型</th><th>時間區段</th><th>實際加班</th><th>換算補休</th><th>已使用</th><th>事由</th><th></th></tr></thead><tbody id="otBody"></tbody></table></div>
       </div>
     </div>
 
@@ -625,6 +663,7 @@ const LD={
   public:{name:'公假',color:'blue',law:'勞基法§43',maxH:9999},
   typhoon:{name:'天災假',color:'red',law:'天災假辦法',maxH:9999},
   unpaid:{name:'留職停薪',color:'amber',law:'勞基法§11',maxH:9999},
+  monthly_personal:{name:'事假(每月2次)',color:'indigo',law:'單位內規',maxH:4,monthly:true},
 };
 
 // ═══════════════════════════════════
@@ -642,7 +681,7 @@ function dbKey(u){return`atd_data_v7_${u}`;}
 function loadUDB(u){try{return JSON.parse(localStorage.getItem(dbKey(u)))||mkDB();}catch{return mkDB();}}
 function saveUDB(u,d){localStorage.setItem(dbKey(u),JSON.stringify(d));}
 
-function mkDB(){return{settings:{name:'',empId:'',joinDate:'',shift:'A',corpUrl:CORP_URL,autoClose:'yes',clientId:''},initBalance:{},adjLog:[],punches:[],leaves:[],overtimes:[],_lastDriveSave:null,_driveFileId:null};}
+function mkDB(){return{settings:{name:'',empId:'',joinDate:'',shift:'A',corpUrl:CORP_URL,autoClose:'yes',clientId:''},initBalance:{},adjLog:[],punches:[],leaves:[],overtimes:[],compLeaves:[],_lastDriveSave:null,_driveFileId:null};}
 
 async function hashP(s){
   const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
@@ -1088,9 +1127,16 @@ function getBal(){
     const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0);
     let start;
     if(k==='annual')start=ib[k]!=null?ib[k]:annDays(db.settings.joinDate)*WORK_H;
-    else if(k==='comp'){const e=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);start=(ib[k]!=null?ib[k]:0)+e;}
+    else if(k==='comp'){const e=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);const cu=(db.compLeaves||[]).reduce((s,c)=>s+(c.hours||0),0);start=(ib[k]!=null?ib[k]:0)+e-cu;}
     else start=ib[k]!=null?ib[k]:(LD[k].maxH||9999);
-    bal[k]=Math.max(start-used,0);
+    // 每月假別：只計算本月已使用量
+    if(LD[k]&&LD[k].monthly){
+      const now=new Date(),ym=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+      const monthUsed=db.leaves.filter(l=>l.leaveType===k&&(l.start||'').startsWith(ym)).reduce((s,l)=>s+(l.hours||0),0);
+      bal[k]=Math.max((LD[k].maxH||4)-monthUsed,0);
+    } else {
+      bal[k]=Math.max(start-used,0);
+    }
   });
   return bal;
 }
@@ -1190,18 +1236,71 @@ function renderCorpRecs(r){
 // ═══════════════════════════════════
 function renderLeavePage(){
   const bal=getBal();
-  document.getElementById('leaveGrid').innerHTML=Object.entries(LD).map(([k,v])=>`<div class="leave-card"><div class="leave-name">${v.name}</div><div class="leave-bal c-${v.color}">${fmtH(bal[k])}</div><div class="leave-law">${v.law}</div></div>`).join('');
+  const now_mp=new Date();
+  const ym_mp=`${now_mp.getFullYear()}-${pad(now_mp.getMonth()+1)}`;
+  const mp_used_h=db.leaves.filter(l=>l.leaveType==='monthly_personal'&&(l.start||'').startsWith(ym_mp)).reduce((s,l)=>s+(l.hours||0),0);
+  const mp_used_times=Math.floor(mp_used_h/2);
+  const mp_rem_times=Math.max(2-mp_used_times,0);
+  document.getElementById('leaveGrid').innerHTML=Object.entries(LD).map(([k,v])=>{
+    if(k==='monthly_personal'){
+      return`<div class="leave-card" style="border:1.5px solid var(--indigo-bdr)">
+        <div class="leave-name">${v.name}</div>
+        <div class="leave-bal c-indigo">${mp_rem_times} 次</div>
+        <div style="font-size:11px;color:var(--teal);margin-top:2px">${fmtH(bal[k])} 剩餘</div>
+        <div class="leave-law">${ym_mp} 本月 · ${v.law}</div>
+      </div>`;
+    }
+    return`<div class="leave-card"><div class="leave-name">${v.name}</div><div class="leave-bal c-${v.color}">${fmtH(bal[k])}</div><div class="leave-law">${v.law}</div></div>`;
+  }).join('');
   renderLeaveTable();
 }
-function onLeaveTypeChange(){calcLeaveDays();chkLeaveWarn();}
+function onLeaveTypeChange(){
+  const type=document.getElementById('leaveType').value;
+  if(type==='monthly_personal'){
+    // 自動帶入2小時，並顯示本月剩餘
+    const s=document.getElementById('leaveStart').value;
+    if(!s){
+      document.getElementById('leaveHours').value=2;
+      const now_t=new Date();const ym_t=`${now_t.getFullYear()}-${pad(now_t.getMonth()+1)}`;
+      const usedT=db.leaves.filter(l=>l.leaveType==='monthly_personal'&&(l.start||'').startsWith(ym_t)).reduce((ss,l)=>ss+(l.hours||0),0);
+      const remTimes=Math.max(2-Math.floor(usedT/2),0);
+      document.getElementById('leavePrev').textContent=`📐 每次固定 2 小時 · ${ym_t} 本月剩 ${remTimes} 次`;
+    } else calcLeaveDays();
+  } else calcLeaveDays();
+  chkLeaveWarn();
+}
 function calcLeaveDays(){
   const s=document.getElementById('leaveStart').value;if(!s)return;
+  const type=document.getElementById('leaveType').value;
+  // 每月2次特殊事假：固定2小時，不依天數計算
+  if(type==='monthly_personal'){
+    document.getElementById('leaveHours').value=2;
+    const bal=getBal();const rem=bal['monthly_personal']||0;
+    const now_t=new Date();const ym_t=`${now_t.getFullYear()}-${pad(now_t.getMonth()+1)}`;
+    const usedT=db.leaves.filter(l=>l.leaveType==='monthly_personal'&&(l.start||'').startsWith(ym_t)).reduce((ss,l)=>ss+(l.hours||0),0);
+    const remTimes=Math.max(2-Math.floor(usedT/2),0);
+    document.getElementById('leavePrev').textContent=`📐 每次固定 2 小時 · ${ym_t} 本月已用 ${Math.floor(usedT/2)} 次，剩 ${remTimes} 次`;
+    chkLeaveWarn();return;
+  }
   const e=document.getElementById('leaveEnd').value||s,days=Math.max(1,Math.round((new Date(e)-new Date(s))/86400000)+1),h=Math.round(days*WORK_H);
   document.getElementById('leaveHours').value=h;
   document.getElementById('leavePrev').textContent=`📐 ${days}天 × ${WORK_H}h = ${h}h → ${fmtH(h)}`;
   chkLeaveWarn();
 }
-function chkLeaveWarn(){const t=document.getElementById('leaveType').value,h=parseFloat(document.getElementById('leaveHours').value)||0,b=getBal()[t];document.getElementById('leaveWarn').style.display=(b!=null&&b<9000&&h>0&&h>b)?'block':'none';}
+function chkLeaveWarn(){
+  const t=document.getElementById('leaveType').value,h=parseFloat(document.getElementById('leaveHours').value)||0;
+  const b=getBal()[t];
+  const el=document.getElementById('leaveWarn');
+  if(t==='monthly_personal'){
+    const now_t=new Date();const ym_t=`${now_t.getFullYear()}-${pad(now_t.getMonth()+1)}`;
+    const usedT=db.leaves.filter(l=>l.leaveType==='monthly_personal'&&(l.start||'').startsWith(ym_t)).reduce((ss,l)=>ss+(l.hours||0),0);
+    if(usedT>=4){el.style.display='block';el.textContent='⚠️ 本月2次不扣薪事假已用完（共4小時），再請將依一般事假計算。';}
+    else el.style.display='none';
+    return;
+  }
+  el.textContent='⚠️ 此假別餘額不足，仍可選擇送出。';
+  el.style.display=(b!=null&&b<9000&&h>0&&h>b)?'block':'none';
+}
 function submitLeave(){
   const type=document.getElementById('leaveType').value,start=document.getElementById('leaveStart').value,end=document.getElementById('leaveEnd').value||start,hours=parseFloat(document.getElementById('leaveHours').value),note=document.getElementById('leaveNote').value;
   if(!start||!hours||hours<1){toast('請填寫日期和時數','error');return;}
@@ -1218,7 +1317,7 @@ function renderLeaveTable(){
 }
 
 // ═══════════════════════════════════
-// 加班
+// 加班 & 補休
 // ═══════════════════════════════════
 function toCompH(h){return Math.max(Math.round(h*2)/2,1);}
 function t2h(t){const[a,b]=t.split(':').map(Number);return a+b/60;}
@@ -1227,15 +1326,172 @@ function calcOTPrev(){
   if(!s||!e){el.textContent='';return;}let h=t2h(e)-t2h(s);if(h<=0)h+=24;
   el.textContent=`⏱ 實際：${h.toFixed(1)}h（${fmtH(h)}）→ 補休：${fmtH(toCompH(h))}`;
 }
+
+// ── 補休申請：計算本次補休時數 ──
+function getCompHours(){
+  const period=document.getElementById('compPeriod').value;
+  const customH=parseFloat(document.getElementById('compCustomH')?.value)||0;
+  const shift=db.settings.shift||'A';
+  // 班別A：上午4h，下午3.5h，全天7.5h
+  // 班別B：上午3.5h，下午4h，全天7.5h
+  const periodH={
+    A:{morning:4,afternoon:3.5,fullday:7.5},
+    B:{morning:3.5,afternoon:4,fullday:7.5},
+  };
+  if(period==='custom') return customH;
+  return periodH[shift][period]||WORK_H;
+}
+
+// 切換時段時顯示/隱藏自訂輸入
+document.addEventListener('DOMContentLoaded',()=>{
+  const sel=document.getElementById('compPeriod');
+  if(sel) sel.addEventListener('change',()=>{
+    const row=document.getElementById('compCustomRow');
+    if(row) row.style.display=sel.value==='custom'?'grid':'none';
+  });
+});
+
+// 即時計算補休來源（填日期/時段後立即更新）
+function calcCompSources(){
+  const period=document.getElementById('compPeriod')?.value;
+  const row=document.getElementById('compCustomRow');
+  if(row) row.style.display=(period==='custom')?'grid':'none';
+
+  const hours=getCompHours();
+  const prev=document.getElementById('compSourcePreview');
+  if(!prev)return;
+  if(!hours||hours<=0){prev.innerHTML='';return;}
+
+  // 找出補休來源（先進先出：最舊的加班先用）
+  const sources=calcCompSourceList(hours);
+  if(!sources){
+    prev.innerHTML=`<div style="font-size:12px;color:var(--red);padding:8px 12px;background:var(--red-bg);border-radius:var(--radius-sm);border:1px solid var(--red-bdr)">⚠️ 補休餘額不足（需要 ${fmtH(hours)}，目前僅剩 ${fmtH(getBal().comp)}）</div>`;
+    return;
+  }
+  const tl={workday:'平日加班',rest:'休息日加班',holiday:'例假日加班',national:'國定假日加班'};
+  prev.innerHTML=`<div style="background:var(--teal-bg);border:1px solid var(--teal-bdr);border-radius:var(--radius-sm);padding:12px 14px">
+    <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:8px">📌 本次補休 ${fmtH(hours)} 來自以下加班紀錄：</div>
+    ${sources.map(s=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--amber);font-weight:600">⏰</span>
+      <span style="flex:1;color:var(--text2)">${s.date}　${s.start}–${s.end}　<span class="badge badge-amber" style="font-size:10px">${tl[s.otType]||s.otType}</span></span>
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:600">使用 ${fmtH(s.useH)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// 計算補休來源列表（先進先出）
+// 回傳 [{date, start, end, otType, useH}, ...] 或 null（餘額不足）
+function calcCompSourceList(needH){
+  // 已使用的補休（按加班 id 計算各筆已消耗多少）
+  const usedMap={};
+  (db.compLeaves||[]).forEach(cl=>{
+    (cl.sources||[]).forEach(s=>{
+      usedMap[s.otId]=(usedMap[s.otId]||0)+s.useH;
+    });
+  });
+  // 可用加班清單（由舊到新）
+  const avail=[...db.overtimes]
+    .sort((a,b)=>new Date(a.date+' '+a.start)-new Date(b.date+' '+b.start))
+    .map(o=>({...o,remainH:Math.max((o.compH||0)-(usedMap[o.id]||0),0)}))
+    .filter(o=>o.remainH>0);
+  const totalAvail=avail.reduce((s,o)=>s+o.remainH,0);
+  if(totalAvail<needH) return null;
+  const sources=[];let left=needH;
+  for(const o of avail){
+    if(left<=0) break;
+    const use=Math.min(o.remainH,left);
+    sources.push({otId:o.id,date:o.date,start:o.start,end:o.end,otType:o.otType,useH:Math.round(use*10)/10});
+    left=Math.round((left-use)*10)/10;
+  }
+  return sources;
+}
+
+function submitComp(){
+  const date=document.getElementById('compDate').value;
+  const period=document.getElementById('compPeriod').value;
+  const note=document.getElementById('compNote').value;
+  const hours=getCompHours();
+  if(!date){toast('請填寫補休日期','error');return;}
+  if(!hours||hours<=0){toast('請填寫補休時數','error');return;}
+  const sources=calcCompSourceList(hours);
+  if(!sources){toast(`補休餘額不足，目前剩 ${fmtH(getBal().comp)}`,'error');return;}
+  const periodLabel={morning:'上午',afternoon:'下午',fullday:'全天',custom:'自訂'};
+  if(!db.compLeaves) db.compLeaves=[];
+  db.compLeaves.push({id:Date.now(),date,period,periodLabel:periodLabel[period],hours,sources,note,status:'pending'});
+  saveDB();renderOTPage();clearCompForm();
+  toast(`補休 ${fmtH(hours)} 已記錄，來源已自動追蹤`,'success');
+}
+
+function clearCompForm(){
+  const ids=['compDate','compNote','compCustomH'];
+  ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const sel=document.getElementById('compPeriod');if(sel)sel.selectedIndex=0;
+  const row=document.getElementById('compCustomRow');if(row)row.style.display='none';
+  const prev=document.getElementById('compSourcePreview');if(prev)prev.innerHTML='';
+}
+
+function delComp(id){
+  db.compLeaves=(db.compLeaves||[]).filter(c=>c.id!==id);
+  saveDB();renderOTPage();
+}
+
+// ── 渲染加班補休頁面 ──
 function renderOTPage(){
   const bal=getBal(),cE=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);
   const now=new Date(),m=now.getMonth(),y=now.getFullYear();
   const mOTH=db.overtimes.filter(o=>{const d=new Date(o.date);return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,o)=>s+(o.actualH||0),0);
-  document.getElementById('otSummary').innerHTML=`<div class="stat-card"><div class="stat-label">補休餘額</div><div class="stat-value c-teal">${fmtH(bal.comp)}</div><div class="stat-sub">可用</div></div><div class="stat-card"><div class="stat-label">本月加班</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">本月</div></div><div class="stat-card"><div class="stat-label">累積換算</div><div class="stat-value c-green">${fmtH(cE)}</div><div class="stat-sub">歷史</div></div>`;
+  const compUsedH=(db.compLeaves||[]).reduce((s,c)=>s+(c.hours||0),0);
+
+  document.getElementById('otSummary').innerHTML=`
+    <div class="stat-card"><div class="stat-label">補休餘額</div><div class="stat-value c-teal">${fmtH(bal.comp)}</div><div class="stat-sub">可用補休</div></div>
+    <div class="stat-card"><div class="stat-label">本月加班</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">本月實際</div></div>
+    <div class="stat-card"><div class="stat-label">累積換算</div><div class="stat-value c-green">${fmtH(cE)}</div><div class="stat-sub">歷史總計</div></div>`;
+
+  // 補休紀錄（含來源明細）
   const tl={workday:'平日',rest:'休息日',holiday:'例假日',national:'國定假日'};
-  const rows=[...db.overtimes].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  document.getElementById('otBody').innerHTML=rows.length?rows.map(o=>`<tr><td>${o.date}</td><td><span class="badge badge-amber">${tl[o.otType]}</span></td><td>${o.actualH}h<br><span style="font-size:11px;color:var(--text3)">${fmtH(o.actualH)}</span></td><td style="color:var(--teal)">${fmtH(o.compH)}</td><td style="color:var(--text3);font-size:12px">${o.note||'—'}</td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="delOT(${o.id})">刪除</button></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">尚無加班紀錄</td></tr>';
+  const compRows=[...(db.compLeaves||[])].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('compBody').innerHTML=compRows.length?compRows.map(c=>{
+    const srcHtml=(c.sources||[]).map(s=>
+      `<div style="font-size:11px;color:var(--text3);padding:2px 0">📎 ${s.date} ${s.start}–${s.end}（${tl[s.otType]||s.otType}）使用 ${fmtH(s.useH)}</div>`
+    ).join('');
+    return`<tr>
+      <td>${c.date}</td>
+      <td>${c.periodLabel||c.period}</td>
+      <td style="color:var(--teal);font-weight:600">${fmtH(c.hours)}</td>
+      <td>${srcHtml||'—'}</td>
+      <td style="color:var(--text3);font-size:12px">${c.note||'—'}</td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="delComp(${c.id})">刪除</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">尚無補休紀錄</td></tr>';
+
+  // 加班紀錄（含已使用時數）
+  const usedMap={};
+  (db.compLeaves||[]).forEach(cl=>(cl.sources||[]).forEach(s=>{
+    usedMap[s.otId]=(usedMap[s.otId]||0)+s.useH;
+  }));
+  const otRows=[...db.overtimes].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('otBody').innerHTML=otRows.length?otRows.map(o=>{
+    const usedH=usedMap[o.id]||0;
+    const remH=Math.max((o.compH||0)-usedH,0);
+    const usedPct=o.compH>0?Math.round(usedH/o.compH*100):0;
+    return`<tr>
+      <td>${o.date}</td>
+      <td><span class="badge badge-amber">${tl[o.otType]||o.otType}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${o.start||'—'} – ${o.end||'—'}</td>
+      <td>${o.actualH}h<br><span style="font-size:11px;color:var(--text3)">${fmtH(o.actualH)}</span></td>
+      <td style="color:var(--teal)">${fmtH(o.compH)}</td>
+      <td>
+        <div style="font-size:11px">
+          <span style="color:${remH>0?'var(--green)':'var(--text3)'}">${fmtH(remH)} 剩餘</span>
+          ${usedH>0?`<div style="font-size:10px;color:var(--text3)">已用 ${fmtH(usedH)}（${usedPct}%）</div>`:''}
+        </div>
+      </td>
+      <td style="color:var(--text3);font-size:12px">${o.note||'—'}</td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="delOT(${o.id})">刪除</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">尚無加班紀錄</td></tr>';
 }
+
 function submitOT(){
   const date=document.getElementById('otDate').value,otType=document.getElementById('otType').value,start=document.getElementById('otStart').value,end=document.getElementById('otEnd').value,note=document.getElementById('otNote').value;
   if(!date||!start||!end){toast('請填寫日期和時間','error');return;}
