@@ -358,9 +358,10 @@ tr:hover td{background:var(--bg3);}
           </div>
           <div class="form-row">
             <div class="form-group"><label>結束日期（不填同開始日）</label><input type="date" id="leaveEnd" oninput="calcLeaveDays()"></div>
-            <div class="form-group"><label>請假時數（小時）</label><input type="number" id="leaveHours" min="1" step="1"></div>
+            <div class="form-group"><label>請假時數（小時）</label><input type="number" id="leaveHours" min="1" step="1" oninput="onLeaveHoursInput()"></div>
           </div>
           <div id="leavePrev" style="font-size:12px;color:var(--teal);min-height:18px"></div>
+          <div id="leaveCompSourcePreview"></div>
           <div class="form-group"><label>備註</label><textarea id="leaveNote" placeholder="選填"></textarea></div>
           <div id="leaveWarn" style="display:none" class="hint-warn">⚠️ 此假別餘額不足，仍可選擇送出。</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1268,6 +1269,7 @@ function onLeaveTypeChange(){
     } else calcLeaveDays();
   } else calcLeaveDays();
   chkLeaveWarn();
+  renderLeaveCompSource();
 }
 function calcLeaveDays(){
   const s=document.getElementById('leaveStart').value;if(!s)return;
@@ -1286,6 +1288,7 @@ function calcLeaveDays(){
   document.getElementById('leaveHours').value=h;
   document.getElementById('leavePrev').textContent=`📐 ${days}天 × ${WORK_H}h = ${h}h → ${fmtH(h)}`;
   chkLeaveWarn();
+  renderLeaveCompSource();
 }
 function chkLeaveWarn(){
   const t=document.getElementById('leaveType').value,h=parseFloat(document.getElementById('leaveHours').value)||0;
@@ -1301,6 +1304,38 @@ function chkLeaveWarn(){
   el.textContent='⚠️ 此假別餘額不足，仍可選擇送出。';
   el.style.display=(b!=null&&b<9000&&h>0&&h>b)?'block':'none';
 }
+// 時數輸入時即時更新來源預覽
+function onLeaveHoursInput(){
+  chkLeaveWarn();
+  renderLeaveCompSource();
+}
+
+// 即時渲染補休來源明細（只在選補休時顯示）
+function renderLeaveCompSource(){
+  const prev=document.getElementById('leaveCompSourcePreview');
+  if(!prev)return;
+  const type=document.getElementById('leaveType').value;
+  if(type!=='comp'){prev.innerHTML='';return;}
+  const hours=parseFloat(document.getElementById('leaveHours').value)||0;
+  if(!hours||hours<=0){prev.innerHTML='';return;}
+  const sources=calcCompSourceList(hours);
+  const tl={workday:'平日加班',rest:'休息日加班',holiday:'例假日加班',national:'國定假日加班'};
+  if(!sources){
+    const bal=getBal();
+    prev.innerHTML=`<div style="font-size:12px;color:var(--red);padding:10px 14px;background:var(--red-bg);border-radius:var(--radius-sm);border:1px solid var(--red-bdr);margin:4px 0">⚠️ 補休餘額不足（需要 ${fmtH(hours)}，目前剩 ${fmtH(bal.comp)}）</div>`;
+    return;
+  }
+  prev.innerHTML=`<div style="background:var(--teal-bg);border:1.5px solid var(--teal-bdr);border-radius:var(--radius-sm);padding:12px 16px;margin:4px 0">
+    <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">📌 本次補休 ${fmtH(hours)} 將從以下加班時數扣除（先加班先扣）：</div>
+    ${sources.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(13,148,136,.15);font-size:12px">
+      <div style="width:18px;height:18px;border-radius:50%;background:var(--teal);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+      <div style="flex:1"><span style="font-weight:600;color:var(--text)">${s.date}</span><span style="color:var(--text3);margin:0 6px">·</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${s.start} – ${s.end}</span><span style="color:var(--text3);margin:0 6px">·</span><span class="badge badge-amber" style="font-size:10px">${tl[s.otType]||s.otType}</span></div>
+      <div style="font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:700;white-space:nowrap">扣 ${fmtH(s.useH)}</div>
+    </div>`).join('')}
+    <div style="text-align:right;margin-top:8px;font-size:11px;color:var(--text3)">共 ${sources.length} 筆 · 合計扣除 ${fmtH(sources.reduce((s,x)=>s+x.useH,0))}</div>
+  </div>`;
+}
+
 function submitLeave(){
   const type=document.getElementById('leaveType').value,start=document.getElementById('leaveStart').value,end=document.getElementById('leaveEnd').value||start,hours=parseFloat(document.getElementById('leaveHours').value),note=document.getElementById('leaveNote').value;
   if(!start||!hours||hours<1){toast('請填寫日期和時數','error');return;}
@@ -1309,7 +1344,13 @@ function submitLeave(){
   else doAddLeave(type,start,end,hours,note);
 }
 function doAddLeave(t,s,e,h,n){db.leaves.push({id:Date.now(),leaveType:t,start:s,end:e,hours:h,note:n,status:'pending'});saveDB();renderLeavePage();clearLeaveForm();toast(`${LD[t].name} ${fmtH(h)} 已記錄`,'success');}
-function clearLeaveForm(){['leaveStart','leaveEnd','leaveHours','leaveNote'].forEach(id=>document.getElementById(id).value='');document.getElementById('leaveType').selectedIndex=0;document.getElementById('leaveWarn').style.display='none';document.getElementById('leavePrev').textContent='';}
+function clearLeaveForm(){
+  ['leaveStart','leaveEnd','leaveHours','leaveNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('leaveType').selectedIndex=0;
+  document.getElementById('leaveWarn').style.display='none';
+  document.getElementById('leavePrev').textContent='';
+  const prev=document.getElementById('leaveCompSourcePreview');if(prev)prev.innerHTML='';
+}
 function delLeave(id){db.leaves=db.leaves.filter(l=>l.id!==id);saveDB();renderLeavePage();}
 function renderLeaveTable(){
   const rows=[...db.leaves].sort((a,b)=>new Date(b.start)-new Date(a.start));
