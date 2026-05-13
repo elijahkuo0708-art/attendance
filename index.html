@@ -9,42 +9,84 @@
 <link rel="manifest" href="manifest.json">
 <title>差勤管理系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
-:root {
-  --bg:#f0f4ff; --bg2:#ffffff; --bg3:#f5f7ff; --surface:#ffffff;
-  --border:rgba(99,102,241,0.12); --border2:rgba(99,102,241,0.22);
-  --text:#1e1b4b; --text2:#4b5280; --text3:#9095b8;
-  --shadow:0 2px 12px rgba(99,102,241,0.08); --shadow-md:0 4px 20px rgba(99,102,241,0.13);
-  --green:#059669; --green-bg:#ecfdf5; --green-bdr:#6ee7b7;
-  --blue:#2563eb;  --blue-bg:#eff6ff;  --blue-bdr:#93c5fd;
-  --amber:#d97706; --amber-bg:#fffbeb; --amber-bdr:#fcd34d;
-  --red:#dc2626;   --red-bg:#fef2f2;   --red-bdr:#fca5a5;
+:root{
+  --bg:#f0f4ff;--bg2:#fff;--bg3:#f5f7ff;
+  --border:rgba(99,102,241,.12);--border2:rgba(99,102,241,.22);
+  --text:#1e1b4b;--text2:#4b5280;--text3:#9095b8;
+  --shadow:0 2px 12px rgba(99,102,241,.08);--shadow-md:0 4px 20px rgba(99,102,241,.13);
+  --green:#059669;--green-bg:#ecfdf5;--green-bdr:#6ee7b7;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-bdr:#93c5fd;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-bdr:#fcd34d;
+  --red:#dc2626;--red-bg:#fef2f2;--red-bdr:#fca5a5;
   --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-bdr:#c4b5fd;
-  --teal:#0d9488;  --teal-bg:#f0fdfa;  --teal-bdr:#5eead4;
+  --teal:#0d9488;--teal-bg:#f0fdfa;--teal-bdr:#5eead4;
   --indigo:#4f46e5;--indigo-bg:#eef2ff;--indigo-bdr:#a5b4fc;
-  --accent:#4f46e5; --radius:14px; --radius-sm:9px;
+  --accent:#4f46e5;--radius:14px;--radius-sm:9px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ══ 登入頁 ══ */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.lcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:40px 36px;width:100%;max-width:420px;box-shadow:var(--shadow-md);}
+.llogo{text-align:center;margin-bottom:28px;}
+.llogo h1{font-size:22px;font-weight:700;color:var(--accent);}
+.llogo p{font-size:13px;color:var(--text3);margin-top:5px;}
+.ltab{display:flex;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;margin-bottom:22px;gap:4px;}
+.ltab-btn{flex:1;padding:9px;border:none;border-radius:7px;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;color:var(--text3);}
+.ltab-btn.active{background:var(--bg2);color:var(--accent);box-shadow:var(--shadow);}
+.lform{display:grid;gap:14px;}
+.lg{display:flex;flex-direction:column;gap:5px;}
+.lg label{font-size:12px;color:var(--text2);font-weight:600;}
+.lg input{background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:14px;outline:none;transition:border-color .15s;}
+.lg input:focus{border-color:var(--accent);}
+.lerr{font-size:12px;color:var(--red);padding:8px 12px;background:var(--red-bg);border-radius:var(--radius-sm);border:1px solid var(--red-bdr);display:none;}
+.lbtn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,.25);transition:filter .15s;margin-top:2px;}
+.lbtn:hover{filter:brightness(1.08);}
+.laccs{margin-top:18px;border-top:1px solid var(--border);padding-top:14px;}
+.laccs-title{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.lacc{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:background .15s;}
+.lacc:hover{background:var(--indigo-bg);}
+.lacc-av{width:32px;height:32px;border-radius:50%;background:var(--indigo-bg);border:2px solid var(--indigo-bdr);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--indigo);flex-shrink:0;}
+.lacc-name{font-size:13px;font-weight:500;flex:1;}
+.lacc-del{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 8px;border-radius:4px;}
+.lacc-del:hover{color:var(--red);background:var(--red-bg);}
+
+/* ══ 同步覆蓋層 ══ */
+#syncOverlay{display:none;position:fixed;inset:0;background:rgba(240,244,255,.85);backdrop-filter:blur(4px);z-index:9998;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#syncOverlay.show{display:flex;}
+.sync-spinner{width:44px;height:44px;border:4px solid var(--indigo-bdr);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-msg{font-size:14px;font-weight:600;color:var(--accent);}
+
+/* ══ 主系統 ══ */
+#appPage{display:none;}
 .app{display:flex;min-height:100vh;}
-.sidebar{width:228px;min-width:228px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;box-shadow:var(--shadow);}
-.sidebar-logo{padding:22px 22px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--indigo-bg),var(--blue-bg));}
-.sidebar-logo h1{font-size:16px;font-weight:700;color:var(--accent);}
-.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:3px;}
-.nav-section{padding:10px 0;overflow-y:auto;}
+.sidebar{width:228px;min-width:228px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;box-shadow:var(--shadow);}
+.sidebar-logo{padding:20px 22px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--indigo-bg),var(--blue-bg));}
+.sidebar-logo h1{font-size:15px;font-weight:700;color:var(--accent);}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px;}
+.nav-section{padding:10px 0;overflow-y:auto;flex:1;}
 .nav-label{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--text3);padding:6px 22px 4px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 22px;cursor:pointer;font-size:13.5px;color:var(--text2);border-left:3px solid transparent;transition:all .15s;user-select:none;margin:1px 0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 22px;cursor:pointer;font-size:13.5px;color:var(--text2);border-left:3px solid transparent;transition:all .15s;user-select:none;}
 .nav-item:hover{color:var(--accent);background:var(--indigo-bg);}
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--indigo-bg);font-weight:500;}
 .nav-icon{font-size:15px;width:20px;text-align:center;}
-.sidebar-user{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg3);}
+.sidebar-user{padding:14px 20px;border-top:1px solid var(--border);background:var(--bg3);}
 .user-name{font-size:13px;font-weight:600;}
-.user-sub{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+.user-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5;}
+.user-gdrive{font-size:11px;margin-top:4px;}
+.user-logout{font-size:11px;color:var(--red);cursor:pointer;margin-top:6px;display:inline-block;}
+.user-logout:hover{text-decoration:underline;}
 .main{margin-left:228px;flex:1;min-height:100vh;}
 .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;box-shadow:var(--shadow);}
 .topbar-title{font-size:17px;font-weight:700;flex:1;}
+.sync-status-pill{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.sync-status-pill.synced{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr);}
+.sync-status-pill.syncing{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);}
+.sync-status-pill.local{background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
 .topbar-date{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;background:var(--bg3);padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);}
 #menuBtn{display:none;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:4px;}
 .page{display:none;padding:28px;max-width:1100px;}
@@ -57,20 +99,20 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
 .stat-value{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;margin:7px 0 3px;line-height:1.2;}
 .stat-sub{font-size:11px;color:var(--text3);}
-.c-green{color:var(--green);} .c-blue{color:var(--blue);} .c-amber{color:var(--amber);}
-.c-red{color:var(--red);} .c-purple{color:var(--purple);} .c-teal{color:var(--teal);} .c-indigo{color:var(--indigo);}
+.c-green{color:var(--green);}.c-blue{color:var(--blue);}.c-amber{color:var(--amber);}
+.c-red{color:var(--red);}.c-purple{color:var(--purple);}.c-teal{color:var(--teal);}.c-indigo{color:var(--indigo);}
 .punch-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
 .punch-btn{padding:22px 16px;border-radius:var(--radius);border:1.5px solid;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:700;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:var(--shadow);}
 .punch-btn .p-icon{font-size:26px;}
-.punch-btn.checkin {background:var(--green-bg); border-color:var(--green-bdr); color:var(--green);}
-.punch-btn.checkout{background:var(--blue-bg);  border-color:var(--blue-bdr);  color:var(--blue);}
-.punch-btn.overtime{background:var(--amber-bg); border-color:var(--amber-bdr); color:var(--amber);}
+.punch-btn.checkin{background:var(--green-bg);border-color:var(--green-bdr);color:var(--green);}
+.punch-btn.checkout{background:var(--blue-bg);border-color:var(--blue-bdr);color:var(--blue);}
+.punch-btn.overtime{background:var(--amber-bg);border-color:var(--amber-bdr);color:var(--amber);}
 .punch-btn.business{background:var(--purple-bg);border-color:var(--purple-bdr);color:var(--purple);}
 .punch-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
 .punch-btn:active{transform:scale(.97);}
 .sync-bar{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);margin-bottom:20px;flex-wrap:wrap;}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:blink 2s infinite;flex-shrink:0;}
-.sync-dot.ok{background:var(--green);animation:none;}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:blink 2s infinite;flex-shrink:0;}
+.sdot.ok{background:var(--green);animation:none;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .record-list{display:flex;flex-direction:column;gap:8px;}
 .record-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);}
@@ -99,7 +141,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}
 .btn-ghost:hover{background:var(--bg3);}
 .btn-google{background:#fff;color:#3c4043;border:1.5px solid #dadce0;font-weight:600;}
-.btn-google:hover{background:#f8f9fa;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.btn-google:hover{background:#f8f9fa;}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);border-bottom:2px solid var(--border);font-weight:700;background:var(--bg3);}
@@ -107,62 +149,55 @@ td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text2);ve
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg3);}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.badge-green {background:var(--green-bg); color:var(--green);  border:1px solid var(--green-bdr);}
-.badge-blue  {background:var(--blue-bg);  color:var(--blue);   border:1px solid var(--blue-bdr);}
-.badge-amber {background:var(--amber-bg); color:var(--amber);  border:1px solid var(--amber-bdr);}
-.badge-red   {background:var(--red-bg);   color:var(--red);    border:1px solid var(--red-bdr);}
-.badge-purple{background:var(--purple-bg);color:var(--purple); border:1px solid var(--purple-bdr);}
-.badge-teal  {background:var(--teal-bg);  color:var(--teal);   border:1px solid var(--teal-bdr);}
-.badge-indigo{background:var(--indigo-bg);color:var(--indigo); border:1px solid var(--indigo-bdr);}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bdr);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-bdr);}
+.badge-teal{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bdr);}
 .ot-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
-.corp-record-table{width:100%;border-collapse:collapse;font-size:13px;}
-.corp-record-table th{background:var(--indigo-bg);color:var(--indigo);padding:8px 14px;text-align:left;font-size:11px;letter-spacing:.07em;border-bottom:2px solid var(--indigo-bdr);}
-.corp-record-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2);}
-.corp-record-table tr:last-child td{border-bottom:none;}
-.corp-record-table tr:hover td{background:var(--indigo-bg);}
-/* 整月視圖 */
+.corp-rt{width:100%;border-collapse:collapse;font-size:13px;}
+.corp-rt th{background:var(--indigo-bg);color:var(--indigo);padding:8px 14px;text-align:left;font-size:11px;border-bottom:2px solid var(--indigo-bdr);}
+.corp-rt td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2);}
 .month-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
 .month-nav-title{font-size:18px;font-weight:700;flex:1;text-align:center;}
-.month-grid-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.month-header-row{display:grid;grid-template-columns:repeat(7,1fr);background:var(--indigo-bg);}
-.month-header-cell{padding:10px 4px;text-align:center;font-size:12px;font-weight:700;color:var(--indigo);border-right:1px solid var(--border);}
-.month-header-cell:last-child{border-right:none;}
-.month-body{display:grid;grid-template-columns:repeat(7,1fr);}
-.month-day{min-height:82px;padding:6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);}
-.month-day.empty{background:var(--bg3);}
-.month-day.today{background:var(--indigo-bg);}
-.month-day:nth-child(7n){border-right:none;}
-.day-num{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px;}
-.today .day-num{color:var(--indigo);font-weight:700;}
-.day-tag{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tag-checkin {background:var(--green-bg); color:var(--green);}
-.tag-checkout{background:var(--blue-bg);  color:var(--blue);}
-.tag-leave   {background:var(--purple-bg);color:var(--purple);}
-.tag-ot      {background:var(--amber-bg); color:var(--amber);}
-/* 假別調整 */
+.mgw{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.mhr{display:grid;grid-template-columns:repeat(7,1fr);background:var(--indigo-bg);}
+.mhc{padding:10px 4px;text-align:center;font-size:12px;font-weight:700;color:var(--indigo);border-right:1px solid var(--border);}
+.mhc:last-child{border-right:none;}
+.mbody{display:grid;grid-template-columns:repeat(7,1fr);}
+.mday{min-height:82px;padding:6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);}
+.mday.empty{background:var(--bg3);}
+.mday.today{background:var(--indigo-bg);}
+.mday:nth-child(7n){border-right:none;}
+.dnum{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.today .dnum{color:var(--indigo);font-weight:700;}
+.dtag{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tag-ci{background:var(--green-bg);color:var(--green);}
+.tag-co{background:var(--blue-bg);color:var(--blue);}
+.tag-lv{background:var(--purple-bg);color:var(--purple);}
+.tag-ot{background:var(--amber-bg);color:var(--amber);}
 .adj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
 .adj-card{background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:12px;}
 .adj-info{flex:1;}
 .adj-name{font-size:13px;font-weight:600;}
 .adj-bal{font-size:11px;color:var(--text3);margin-top:2px;}
-.adj-controls{display:flex;align-items:center;gap:6px;}
+.adj-ctrls{display:flex;align-items:center;gap:6px;}
 .adj-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .adj-btn:hover{background:var(--indigo-bg);border-color:var(--accent);color:var(--accent);}
-.adj-input{width:64px;text-align:center;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:5px 6px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);outline:none;}
-.adj-input:focus{border-color:var(--accent);}
+.adj-inp{width:64px;text-align:center;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:5px 6px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);outline:none;}
+.adj-inp:focus{border-color:var(--accent);}
 .adj-unit{font-size:11px;color:var(--text3);}
-/* Google Drive 區塊 */
-.gdrive-box{background:linear-gradient(135deg,#1a73e8 0%,#0d47a1 100%);border-radius:var(--radius);padding:24px;color:#fff;margin-bottom:20px;}
-.gdrive-box h3{font-size:16px;font-weight:700;margin-bottom:8px;}
-.gdrive-box p{font-size:13px;opacity:.9;line-height:1.7;margin-bottom:16px;}
-.gdrive-status{background:rgba(255,255,255,.15);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-/* Modal */
+/* Drive 設定頁 */
+.drive-hero{background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:var(--radius);padding:24px;color:#fff;margin-bottom:20px;}
+.drive-hero h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.drive-hero p{font-size:13px;opacity:.9;line-height:1.7;margin-bottom:16px;}
+.drive-status-row{background:rgba(255,255,255,.15);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .modal-overlay{position:fixed;inset:0;background:rgba(30,27,75,.35);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:92%;max-width:460px;transform:scale(.95);transition:transform .2s;box-shadow:0 20px 60px rgba(79,70,229,.18);}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:92%;max-width:480px;transform:scale(.95);transition:transform .2s;box-shadow:0 20px 60px rgba(79,70,229,.18);}
 .modal-overlay.open .modal{transform:scale(1);}
 .modal-title{font-size:16px;font-weight:700;margin-bottom:8px;}
-.modal-sub{font-size:13px;color:var(--text2);line-height:1.75;white-space:pre-line;}
+.modal-sub{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-line;}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
 .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
 .toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(79,70,229,.15);transform:translateX(130%);transition:transform .3s;min-width:220px;}
@@ -175,405 +210,392 @@ tr:hover td{background:var(--bg3);}
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);}
   .sidebar.open{transform:translateX(0);}
-  .main{margin-left:0;} #menuBtn{display:block;}
-  .punch-grid,.ot-summary{grid-template-columns:1fr 1fr;}
+  .main{margin-left:0;}#menuBtn{display:block;}
+  .punch-grid,.ot-summary,.form-row{grid-template-columns:1fr 1fr;}
   .form-row{grid-template-columns:1fr;}
   .page{padding:14px;}
   .dash-grid{grid-template-columns:repeat(2,1fr);}
-  .month-day{min-height:56px;}
+  .mday{min-height:56px;}
 }
 </style>
 </head>
 <body>
+
+<!-- 同步覆蓋層 -->
+<div id="syncOverlay">
+  <div class="sync-spinner"></div>
+  <div class="sync-msg" id="syncMsg">正在從 Google Drive 同步資料...</div>
+</div>
+
+<!-- ══ 登入頁 ══ -->
+<div id="loginPage">
+  <div class="lcard">
+    <div class="llogo">
+      <h1>⏱ 差勤管理系統</h1>
+      <p>台灣勞基法合規・個人差勤管理</p>
+    </div>
+    <div class="ltab">
+      <button class="ltab-btn active" id="tabLogin" onclick="switchTab('login')">登入</button>
+      <button class="ltab-btn" id="tabRegister" onclick="switchTab('register')">建立帳號</button>
+    </div>
+    <div id="formLogin" class="lform">
+      <div class="lg"><label>帳號</label><input type="text" id="loginUser" placeholder="例：陳小玉" autocomplete="username"></div>
+      <div class="lg"><label>密碼</label><input type="password" id="loginPwd" placeholder="請輸入密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="lerr" id="loginErr"></div>
+      <button class="lbtn" onclick="doLogin()">登入</button>
+    </div>
+    <div id="formRegister" class="lform" style="display:none">
+      <div class="hint-info">建立帳號後，請前往「設定 → Google Drive」綁定雲端同步，就可以跨裝置使用。</div>
+      <div class="lg"><label>帳號（不可更改）</label><input type="text" id="regUser" placeholder="例：陳小玉 或 elijah"></div>
+      <div class="lg"><label>密碼（至少6位）</label><input type="password" id="regPwd" placeholder="設定密碼"></div>
+      <div class="lg"><label>確認密碼</label><input type="password" id="regPwd2" placeholder="再輸入一次" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <div class="lerr" id="regErr"></div>
+      <button class="lbtn" onclick="doRegister()">建立帳號</button>
+    </div>
+    <div class="laccs" id="accsArea"></div>
+  </div>
+</div>
+
+<!-- ══ 主系統 ══ -->
+<div id="appPage">
 <div class="bg-overlay" id="bgOverlay" onclick="closeSidebar()"></div>
 <div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><h1>⏱ 差勤管理</h1><p>台灣勞基法合規系統</p></div>
+    <div class="nav-section">
+      <div class="nav-label">主要功能</div>
+      <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">🏠</span>首頁總覽</div>
+      <div class="nav-item" onclick="nav('punch')"><span class="nav-icon">👊</span>打卡</div>
+      <div class="nav-item" onclick="nav('leave')"><span class="nav-icon">📋</span>請假管理</div>
+      <div class="nav-item" onclick="nav('overtime')"><span class="nav-icon">⏰</span>加班補休</div>
+      <div class="nav-label" style="margin-top:6px">查詢</div>
+      <div class="nav-item" onclick="nav('records')"><span class="nav-icon">📊</span>出勤紀錄</div>
+      <div class="nav-item" onclick="nav('calendar')"><span class="nav-icon">📅</span>月曆視圖</div>
+      <div class="nav-label" style="margin-top:6px">系統</div>
+      <div class="nav-item" onclick="nav('adjust')"><span class="nav-icon">✏️</span>假別餘額調整</div>
+      <div class="nav-item" onclick="nav('drivesettings')"><span class="nav-icon">☁️</span>Google Drive 設定</div>
+      <div class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙️</span>設定</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-name" id="sbName">—</div>
+      <div class="user-sub" id="sbShift">—</div>
+      <div class="user-gdrive" id="sbDrive"></div>
+      <span class="user-logout" onclick="doLogout()">🚪 登出</span>
+    </div>
+  </nav>
 
-<!-- ══ Sidebar ══ -->
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <h1>⏱ 差勤管理</h1>
-    <p>台灣勞基法合規系統</p>
-  </div>
-  <div class="nav-section">
-    <div class="nav-label">主要功能</div>
-    <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">🏠</span>首頁總覽</div>
-    <div class="nav-item" onclick="nav('punch')">  <span class="nav-icon">👊</span>打卡</div>
-    <div class="nav-item" onclick="nav('leave')">  <span class="nav-icon">📋</span>請假管理</div>
-    <div class="nav-item" onclick="nav('overtime')"><span class="nav-icon">⏰</span>加班補休</div>
-    <div class="nav-label" style="margin-top:6px">查詢</div>
-    <div class="nav-item" onclick="nav('records')"> <span class="nav-icon">📊</span>出勤紀錄</div>
-    <div class="nav-item" onclick="nav('calendar')"><span class="nav-icon">📅</span>月曆視圖</div>
-    <div class="nav-label" style="margin-top:6px">系統</div>
-    <div class="nav-item" onclick="nav('adjust')">  <span class="nav-icon">✏️</span>假別餘額調整</div>
-    <div class="nav-item" onclick="nav('gdrive')">  <span class="nav-icon">☁️</span>Google Drive</div>
-    <div class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙️</span>設定</div>
-  </div>
-  <div class="sidebar-user">
-    <div class="user-name" id="sidebarName">請設定姓名</div>
-    <div class="user-sub"  id="sidebarShift">班別未設定</div>
-    <div class="user-sub"  id="sidebarGmail" style="color:var(--green);margin-top:4px"></div>
-  </div>
-</nav>
-
-<!-- ══ Main ══ -->
-<div class="main">
-  <div class="topbar">
-    <button id="menuBtn" onclick="toggleSidebar()">☰</button>
-    <div class="topbar-title" id="topbarTitle">首頁總覽</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div id="gdriveIndicator" style="font-size:11px;color:var(--text3);display:none">
-        <span style="color:var(--green)">●</span> 已連線 Drive
+  <div class="main">
+    <div class="topbar">
+      <button id="menuBtn" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">首頁總覽</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sync-status-pill local" id="syncPill">⚪ 本機</div>
+        <div class="topbar-date" id="topbarDate"></div>
       </div>
-      <div class="topbar-date" id="topbarDate"></div>
     </div>
-  </div>
 
-  <!-- ── Dashboard ── -->
-  <div class="page active" id="page-dashboard">
-    <div class="dash-grid" id="dashStats"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="gap">
-      <div class="card"><div class="card-title">⏰ 補休餘額</div><div id="compQuickView"></div></div>
-      <div class="card"><div class="card-title">📋 假別快覽</div><div id="leaveQuickView"></div></div>
-    </div>
-    <div class="card"><div class="card-title">📝 本週出勤紀錄</div><div class="record-list" id="recentRecords"></div></div>
-  </div>
-
-  <!-- ── Punch ── -->
-  <div class="page" id="page-punch">
-    <div class="sync-bar">
-      <div class="sync-dot" id="syncDot"></div>
-      <span id="syncStatus">尚未與公司系統同步</span>
-      <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px;margin-left:auto" onclick="fetchCorpRecords()">🔄 更新公司紀錄</button>
-    </div>
-    <div class="punch-grid">
-      <button class="punch-btn checkin"  onclick="doPunch('checkin')"> <span class="p-icon">🟢</span>簽到（上班）</button>
-      <button class="punch-btn checkout" onclick="doPunch('checkout')"><span class="p-icon">🔵</span>離開（下班）</button>
-      <button class="punch-btn overtime" onclick="doPunch('overtime')"><span class="p-icon">🟡</span>申請加班</button>
-      <button class="punch-btn business" onclick="doPunch('business')"><span class="p-icon">🟣</span>公出／請假</button>
-    </div>
-    <div class="card gap">
-      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span>🏢 公司系統打卡紀錄（本週）</span>
-        <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank"
-           style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:500">開啟公司系統 →</a>
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="dash-grid" id="dashStats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="gap">
+        <div class="card"><div class="card-title">⏰ 補休餘額</div><div id="compView"></div></div>
+        <div class="card"><div class="card-title">📋 假別快覽</div><div id="leaveView"></div></div>
       </div>
-      <div id="corpRecordsArea"><div style="color:var(--text3);font-size:13px;padding:8px 0">按右上角「更新公司紀錄」，或打卡後系統會自動擷取。</div></div>
+      <div class="card"><div class="card-title">📝 本週出勤</div><div class="record-list" id="recentRecs"></div></div>
     </div>
-    <div class="card">
-      <div class="card-title">📋 今日本系統狀態</div>
-      <div id="todayStatus" style="font-size:13px;color:var(--text2);line-height:2.2"></div>
-    </div>
-  </div>
 
-  <!-- ── Leave ── -->
-  <div class="page" id="page-leave">
-    <div class="card gap" style="border:2px solid var(--indigo-bdr);background:var(--indigo-bg)">
-      <div class="card-title" style="color:var(--indigo)">📌 請假流程</div>
-      <p style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px">
-        ① 在下方填寫請假資訊（本系統做紀錄）<br>
-        ② 按「前往公司請假頁面」在公司系統完成正式申請<br>
-        ③ 回來按「送出記錄」存入本系統
-      </p>
-      <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="text-decoration:none">
-        <button class="btn btn-primary" style="font-size:14px;padding:12px 24px">🏢 前往公司請假頁面</button>
-      </a>
+    <!-- Punch -->
+    <div class="page" id="page-punch">
+      <div class="sync-bar">
+        <div class="sdot" id="syncDot"></div>
+        <span id="syncSt">尚未與公司系統同步</span>
+        <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px;margin-left:auto" onclick="fetchCorpRecs()">🔄 更新公司紀錄</button>
+      </div>
+      <div class="punch-grid">
+        <button class="punch-btn checkin"  onclick="doPunch('checkin')"><span class="p-icon">🟢</span>簽到（上班）</button>
+        <button class="punch-btn checkout" onclick="doPunch('checkout')"><span class="p-icon">🔵</span>離開（下班）</button>
+        <button class="punch-btn overtime" onclick="doPunch('overtime')"><span class="p-icon">🟡</span>申請加班</button>
+        <button class="punch-btn business" onclick="doPunch('business')"><span class="p-icon">🟣</span>公出／請假</button>
+      </div>
+      <div class="card gap">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>🏢 公司系統打卡紀錄（本週）</span>
+          <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="font-size:11px;color:var(--blue);text-decoration:none">開啟公司系統 →</a>
+        </div>
+        <div id="corpArea"><div style="color:var(--text3);font-size:13px;padding:8px 0">按右上角「更新公司紀錄」，或打卡後自動擷取。</div></div>
+      </div>
+      <div class="card"><div class="card-title">📋 今日本系統狀態</div><div id="todayStatus" style="font-size:13px;color:var(--text2);line-height:2.2"></div></div>
     </div>
-    <div class="card gap"><div class="card-title">📊 假別餘額</div><div class="leave-grid" id="leaveBalanceGrid"></div></div>
-    <div class="card gap">
-      <div class="card-title">➕ 填寫請假紀錄（本系統存檔）</div>
-      <div class="form-grid">
-        <div class="form-row">
-          <div class="form-group">
-            <label>假別</label>
-            <select id="leaveType" onchange="onLeaveTypeChange()">
-              <option value="annual">特別休假（年假）</option>
-              <option value="comp">補休</option>
-              <option value="personal">事假</option>
-              <option value="sick">病假（一般）</option>
-              <option value="sick_hosp">病假（住院）</option>
-              <option value="menstrual">生理假</option>
-              <option value="marriage">婚假</option>
-              <option value="paternity">陪產假／陪產檢假</option>
-              <option value="maternity">產假</option>
-              <option value="prenatal">產檢假</option>
-              <option value="funeral3">喪假（父母/配偶/子女）8天</option>
-              <option value="funeral6">喪假（祖父母/孫子女/兄弟姊妹）6天</option>
-              <option value="funeral1">喪假（曾祖父母/配偶祖父母）1天</option>
-              <option value="public">公假</option>
-              <option value="typhoon">天災假</option>
-              <option value="unpaid">留職停薪</option>
-            </select>
+
+    <!-- Leave -->
+    <div class="page" id="page-leave">
+      <div class="card gap" style="border:2px solid var(--indigo-bdr);background:var(--indigo-bg)">
+        <div class="card-title" style="color:var(--indigo)">📌 請假流程</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px">① 在下方填寫請假資訊（本系統做紀錄）<br>② 按「前往公司請假頁面」在公司系統完成正式申請<br>③ 回來按「送出記錄」存入本系統</p>
+        <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="text-decoration:none">
+          <button class="btn btn-primary" style="font-size:14px;padding:12px 24px">🏢 前往公司請假頁面</button>
+        </a>
+      </div>
+      <div class="card gap"><div class="card-title">📊 假別餘額</div><div class="leave-grid" id="leaveGrid"></div></div>
+      <div class="card gap">
+        <div class="card-title">➕ 填寫請假紀錄</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>假別</label>
+              <select id="leaveType" onchange="onLeaveTypeChange()">
+                <option value="annual">特別休假（年假）</option><option value="comp">補休</option>
+                <option value="personal">事假</option><option value="sick">病假（一般）</option>
+                <option value="sick_hosp">病假（住院）</option><option value="menstrual">生理假</option>
+                <option value="marriage">婚假</option><option value="paternity">陪產假</option>
+                <option value="maternity">產假</option><option value="prenatal">產檢假</option>
+                <option value="funeral3">喪假（父母/配偶/子女）8天</option>
+                <option value="funeral6">喪假（祖父母/孫子女/兄弟姊妹）6天</option>
+                <option value="funeral1">喪假（曾祖父母/配偶祖父母）1天</option>
+                <option value="public">公假</option><option value="typhoon">天災假</option><option value="unpaid">留職停薪</option>
+              </select>
+            </div>
+            <div class="form-group"><label>開始日期</label><input type="date" id="leaveStart" oninput="calcLeaveDays()"></div>
           </div>
-          <div class="form-group"><label>開始日期</label><input type="date" id="leaveStart" oninput="calcLeaveDays()"></div>
+          <div class="form-row">
+            <div class="form-group"><label>結束日期（不填同開始日）</label><input type="date" id="leaveEnd" oninput="calcLeaveDays()"></div>
+            <div class="form-group"><label>請假時數（小時）</label><input type="number" id="leaveHours" min="1" step="1"></div>
+          </div>
+          <div id="leavePrev" style="font-size:12px;color:var(--teal);min-height:18px"></div>
+          <div class="form-group"><label>備註</label><textarea id="leaveNote" placeholder="選填"></textarea></div>
+          <div id="leaveWarn" style="display:none" class="hint-warn">⚠️ 此假別餘額不足，仍可選擇送出。</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="submitLeave()">✅ 送出記錄到本系統</button>
+            <button class="btn btn-ghost" onclick="clearLeaveForm()">清除</button>
+          </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>結束日期（不填則同開始日）</label><input type="date" id="leaveEnd" oninput="calcLeaveDays()"></div>
-          <div class="form-group"><label>請假時數（小時）</label><input type="number" id="leaveHours" min="1" step="1" placeholder="自動計算，可手動調整"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 請假紀錄</div>
+        <div class="table-wrap"><table><thead><tr><th>假別</th><th>開始</th><th>結束</th><th>時數</th><th>換算</th><th>狀態</th><th>備註</th><th></th></tr></thead><tbody id="leaveBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Overtime -->
+    <div class="page" id="page-overtime">
+      <div class="ot-summary" id="otSummary"></div>
+      <div class="card gap" style="border:2px solid var(--amber-bdr);background:var(--amber-bg)">
+        <div class="card-title" style="color:var(--amber)">📌 加班流程</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px">① 在下方填寫加班資訊（本系統做紀錄）<br>② 按「前往公司申請加班」在公司系統完成正式申請<br>③ 回來按「記錄加班，存入補休」</p>
+        <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="text-decoration:none">
+          <button class="btn btn-primary" style="background:var(--amber);font-size:14px;padding:12px 24px">🏢 前往公司申請加班</button>
+        </a>
+      </div>
+      <div class="card gap">
+        <div class="card-title">➕ 記錄加班（轉補休）</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>加班日期</label><input type="date" id="otDate"></div>
+            <div class="form-group"><label>加班類型</label>
+              <select id="otType"><option value="workday">平日</option><option value="rest">休息日</option><option value="holiday">例假日</option><option value="national">國定假日</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>開始時間</label><input type="time" id="otStart" oninput="calcOTPrev()"></div>
+            <div class="form-group"><label>結束時間</label><input type="time" id="otEnd" oninput="calcOTPrev()"></div>
+          </div>
+          <div id="otPrev" style="font-size:12px;color:var(--teal);min-height:20px;padding:4px 0"></div>
+          <div class="form-group"><label>事由</label><textarea id="otNote" placeholder="加班原因（選填）"></textarea></div>
+          <button class="btn btn-primary" onclick="submitOT()">記錄加班，存入補休</button>
         </div>
-        <div id="leaveHoursPreview" style="font-size:12px;color:var(--teal);min-height:18px"></div>
-        <div class="form-group"><label>備註</label><textarea id="leaveNote" placeholder="選填"></textarea></div>
-        <div id="leaveWarning" style="display:none" class="hint-warn">⚠️ 此假別餘額不足，仍可選擇送出（無薪或事後補充）。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 加班紀錄</div>
+        <div class="table-wrap"><table><thead><tr><th>日期</th><th>類型</th><th>實際加班</th><th>換算補休</th><th>事由</th><th></th></tr></thead><tbody id="otBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Records -->
+    <div class="page" id="page-records">
+      <div class="month-nav">
+        <button class="btn btn-ghost" style="padding:8px 16px" onclick="recCM(-1)">‹ 上個月</button>
+        <div class="month-nav-title" id="recTitle"></div>
+        <button class="btn btn-ghost" style="padding:8px 16px" onclick="recCM(1)">下個月 ›</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="recToday()">📍 回到本月</button>
+        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="exportCSV()">⬇ 匯出本月 CSV</button>
+      </div>
+      <div class="card gap" id="recStats"></div>
+      <div class="card gap">
+        <div class="card-title">📅 整月出勤詳覽</div>
+        <div class="mgw"><div class="mhr" id="recCalHdr"></div><div class="mbody" id="recCalBody"></div></div>
+        <div style="display:flex;gap:14px;margin-top:14px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+          <span><span class="dtag tag-ci" style="display:inline;padding:1px 6px">簽到</span></span>
+          <span><span class="dtag tag-co" style="display:inline;padding:1px 6px">下班</span></span>
+          <span><span class="dtag tag-lv" style="display:inline;padding:1px 6px">請假</span></span>
+          <span><span class="dtag tag-ot" style="display:inline;padding:1px 6px">加班</span></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🕐 本月打卡明細</div>
+        <div class="table-wrap"><table><thead><tr><th>日期</th><th>類型</th><th>時間</th><th>備註</th><th>來源</th></tr></thead><tbody id="recBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="page" id="page-calendar">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <button class="btn btn-ghost" onclick="calCM(-1)">‹</button>
+        <div style="font-size:16px;font-weight:700;flex:1;text-align:center" id="calTitle"></div>
+        <button class="btn btn-ghost" onclick="calCM(1)">›</button>
+      </div>
+      <div class="card"><div id="calGrid"></div></div>
+    </div>
+
+    <!-- Adjust -->
+    <div class="page" id="page-adjust">
+      <div class="card gap">
+        <div class="card-title">✏️ 假別餘額調整</div>
+        <div class="hint-info gap">💡 輸入每個假別的<strong>目前實際剩餘時數</strong>。陪產假剩3天 → 輸入 <strong>22.5</strong>（3×7.5h）。</div>
+        <div class="adj-grid" id="adjGrid"></div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveAdj()">💾 儲存所有調整</button>
+          <button class="btn btn-ghost" onclick="renderAdjPage()">↺ 重置</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 調整紀錄</div>
+        <div class="table-wrap"><table><thead><tr><th>假別</th><th>調整時間</th><th>調整前</th><th>調整後</th></tr></thead><tbody id="adjLog"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Google Drive 設定 -->
+    <div class="page" id="page-drivesettings">
+      <div class="drive-hero">
+        <h3>☁️ Google Drive 跨裝置同步</h3>
+        <p>連結後，您的差勤資料會自動存到個人 Google Drive。<br>任何裝置登入後，都能看到最新資料。</p>
+        <div class="drive-status-row" id="driveStatusRow"><span>⚪</span><span id="driveStatusTxt">尚未連結 Google 帳號</span></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="submitLeave()">✅ 送出記錄到本系統</button>
-          <button class="btn btn-ghost"   onclick="clearLeaveForm()">清除</button>
+          <button class="btn btn-google" onclick="gSignIn()" id="gSignInBtn">
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18"/><path fill="#34A353" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18z"/><path fill="#E94235" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.31"/></svg>
+            連結 Google 帳號
+          </button>
+          <button class="btn btn-ghost" onclick="gSignOut()" id="gSignOutBtn" style="display:none">取消連結</button>
         </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📋 請假紀錄</div>
-      <div class="table-wrap">
-        <table><thead><tr><th>假別</th><th>開始</th><th>結束</th><th>時數</th><th>換算</th><th>狀態</th><th>備註</th><th></th></tr></thead>
-        <tbody id="leaveTableBody"></tbody></table>
-      </div>
-    </div>
-  </div>
 
-  <!-- ── Overtime ── -->
-  <div class="page" id="page-overtime">
-    <div class="ot-summary" id="otSummary"></div>
-    <div class="card gap" style="border:2px solid var(--amber-bdr);background:var(--amber-bg)">
-      <div class="card-title" style="color:var(--amber)">📌 加班流程</div>
-      <p style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px">
-        ① 在下方填寫加班資訊（本系統做紀錄）<br>
-        ② 按「前往公司申請加班」在公司系統完成正式申請<br>
-        ③ 回來按「記錄加班，存入補休」
-      </p>
-      <a href="https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx" target="_blank" style="text-decoration:none">
-        <button class="btn btn-primary" style="background:var(--amber);font-size:14px;padding:12px 24px">🏢 前往公司申請加班</button>
-      </a>
-    </div>
-    <div class="card gap">
-      <div class="card-title">➕ 記錄加班（轉為補休）</div>
-      <div class="form-grid">
-        <div class="form-row">
-          <div class="form-group"><label>加班日期</label><input type="date" id="otDate"></div>
-          <div class="form-group"><label>加班類型</label>
-            <select id="otType">
-              <option value="workday">平日加班</option>
-              <option value="rest">休息日加班</option>
-              <option value="holiday">例假日加班</option>
-              <option value="national">國定假日加班</option>
-            </select>
+      <div class="card gap">
+        <div class="card-title">⚙️ Client ID 設定</div>
+        <div class="hint-info gap" style="line-height:1.9">
+          請先完成 Google Cloud Console 設定（完全免費），取得 Client ID 後貼在下方。<br>
+          👉 詳細步驟請參閱：<strong>Google-Drive設定說明.md</strong>（已附在下載的檔案中）
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Google OAuth Client ID</label>
+            <input type="text" id="clientIdInp" placeholder="xxxx.apps.googleusercontent.com">
           </div>
+          <button class="btn btn-primary" onclick="saveClientId()">儲存 Client ID</button>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>開始時間</label><input type="time" id="otStart" oninput="calcOTPreview()"></div>
-          <div class="form-group"><label>結束時間</label><input type="time" id="otEnd" oninput="calcOTPreview()"></div>
-        </div>
-        <div id="otCalcResult" style="font-size:12px;color:var(--teal);min-height:20px;padding:4px 0"></div>
-        <div class="form-group"><label>事由</label><textarea id="otNote" placeholder="加班原因（選填）"></textarea></div>
-        <button class="btn btn-primary" onclick="submitOvertime()">記錄加班，存入補休</button>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📋 加班紀錄</div>
-      <div class="table-wrap">
-        <table><thead><tr><th>日期</th><th>類型</th><th>實際加班</th><th>換算補休</th><th>事由</th><th></th></tr></thead>
-        <tbody id="otTableBody"></tbody></table>
-      </div>
-    </div>
-  </div>
 
-  <!-- ── Records（整月）── -->
-  <div class="page" id="page-records">
-    <div class="month-nav">
-      <button class="btn btn-ghost" style="padding:8px 16px" onclick="recChangeMonth(-1)">‹ 上個月</button>
-      <div class="month-nav-title" id="recMonthTitle"></div>
-      <button class="btn btn-ghost" style="padding:8px 16px" onclick="recChangeMonth(1)">下個月 ›</button>
-    </div>
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="recGoToday()">📍 回到本月</button>
-      <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="exportMonthCSV()">⬇ 匯出本月 CSV</button>
-    </div>
-    <div class="card gap" id="recMonthStats"></div>
-    <div class="card gap">
-      <div class="card-title">📅 整月出勤詳覽</div>
-      <div class="month-grid-wrap">
-        <div class="month-header-row" id="recCalHeader"></div>
-        <div class="month-body" id="recCalBody"></div>
-      </div>
-      <div style="display:flex;gap:14px;margin-top:14px;font-size:11px;color:var(--text3);flex-wrap:wrap">
-        <span><span class="day-tag tag-checkin" style="display:inline;padding:1px 6px">簽到</span></span>
-        <span><span class="day-tag tag-checkout" style="display:inline;padding:1px 6px">下班</span></span>
-        <span><span class="day-tag tag-leave" style="display:inline;padding:1px 6px">請假</span></span>
-        <span><span class="day-tag tag-ot" style="display:inline;padding:1px 6px">加班</span></span>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">🕐 本月打卡明細</div>
-      <div class="table-wrap">
-        <table><thead><tr><th>日期</th><th>類型</th><th>時間</th><th>備註</th><th>來源</th></tr></thead>
-        <tbody id="recordsTableBody"></tbody></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Calendar ── -->
-  <div class="page" id="page-calendar">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <button class="btn btn-ghost" onclick="changeMonth(-1)">‹</button>
-      <div style="font-size:16px;font-weight:700;flex:1;text-align:center" id="calTitle"></div>
-      <button class="btn btn-ghost" onclick="changeMonth(1)">›</button>
-    </div>
-    <div class="card"><div id="calGrid"></div></div>
-  </div>
-
-  <!-- ── Adjust ── -->
-  <div class="page" id="page-adjust">
-    <div class="card gap">
-      <div class="card-title">✏️ 假別餘額調整</div>
-      <div class="hint-info gap">
-        💡 輸入每個假別的<strong>目前實際剩餘時數</strong>。例如：陪產假剩3天 → 輸入 <strong>22.5</strong>（3×7.5h）。
-      </div>
-      <div class="adj-grid" id="adjGrid"></div>
-      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="saveAdjustments()">💾 儲存所有調整</button>
-        <button class="btn btn-ghost"   onclick="renderAdjustPage()">↺ 重置</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📋 調整紀錄</div>
-      <div class="table-wrap">
-        <table><thead><tr><th>假別</th><th>調整時間</th><th>調整前</th><th>調整後</th><th>備註</th></tr></thead>
-        <tbody id="adjLogBody"></tbody></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Google Drive ── -->
-  <div class="page" id="page-gdrive">
-    <div class="gdrive-box">
-      <h3>☁️ Google Drive 資料同步</h3>
-      <p>用您的 Google 帳號登入，資料自動儲存到個人 Google Drive。<br>每個人資料完全獨立，只有自己看得到。</p>
-      <div class="gdrive-status" id="gdriveStatusBox">
-        <span>⚪</span> <span id="gdriveStatusText">尚未登入 Google 帳號</span>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-google" onclick="gdriveSignIn()" id="gdriveSignInBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18"/><path fill="#34A353" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18z"/><path fill="#E94235" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.31"/></svg>
-          登入 Google 帳號
-        </button>
-        <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)" onclick="gdriveSignOut()" id="gdriveSignOutBtn" style="display:none">登出</button>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="gap">
-      <div class="card">
-        <div class="card-title">⬆ 儲存到 Google Drive</div>
+      <div class="card gap">
+        <div class="card-title">📋 手動同步</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">
-          將本系統所有資料備份到您的 Google Drive。<br>
-          檔案位置：<code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:11px">差勤系統/attendance_data.json</code>
+          系統已設定<strong>自動同步</strong>——每次資料變動都會自動儲存到 Drive，登入後也會自動載入最新資料。<br>
+          若有需要，也可以手動觸發：
         </p>
-        <button class="btn btn-primary" onclick="gdriveSave()">⬆ 儲存到 Drive</button>
-        <div id="lastSavedTime" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="manualSave()">⬆ 立即儲存到 Drive</button>
+          <button class="btn btn-green" onclick="manualLoad()">⬇ 立即從 Drive 讀取</button>
+        </div>
+        <div id="lastSyncInfo" style="font-size:11px;color:var(--text3);margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📤 本機備份</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7">不需 Google 登入，直接下載備份檔。</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-green" onclick="exportAll()">⬇ 下載備份 (JSON)</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ 從本機匯入</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="page" id="page-settings">
+      <div class="card gap">
+        <div class="card-title">👤 個人資訊</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>顯示名稱</label><input type="text" id="sName" placeholder="您的姓名"></div>
+            <div class="form-group"><label>員工編號（選填）</label><input type="text" id="sEmpId"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>到職日期</label><input type="date" id="sJoinDate" oninput="updateAnnInfo()"></div>
+            <div class="form-group"><label>班別</label>
+              <select id="sShift">
+                <option value="A">班別A：08:30–12:30 ／ 13:30–17:00</option>
+                <option value="B">班別B：09:00–12:30 ／ 13:30–17:30</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">儲存設定</button>
+        </div>
+      </div>
+      <div class="card gap">
+        <div class="card-title">🔑 修改密碼</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>新密碼</label><input type="password" id="newPwd" placeholder="至少6位"></div>
+            <div class="form-group"><label>確認新密碼</label><input type="password" id="newPwd2" placeholder="再輸入一次"></div>
+          </div>
+          <button class="btn btn-primary" onclick="changePwd()">更新密碼</button>
+        </div>
+      </div>
+      <div class="card gap">
+        <div class="card-title">⚙️ 系統設定</div>
+        <div class="form-grid">
+          <div class="form-group"><label>公司打卡系統網址</label><input type="text" id="sCorpUrl"></div>
+          <div class="form-group"><label>打卡後自動關閉公司頁面</label>
+            <select id="sAutoClose"><option value="yes">是（3秒後關閉）</option><option value="no">否</option></select>
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">儲存</button>
+        </div>
+      </div>
+      <div class="card gap">
+        <div class="card-title">📅 特休日數試算</div>
+        <div id="annInfo" style="font-size:13px;color:var(--text2);line-height:2.1"></div>
       </div>
       <div class="card">
-        <div class="card-title">⬇ 從 Google Drive 讀取</div>
-        <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">
-          換裝置或清除資料後，從 Drive 還原。<br>
-          <span style="color:var(--amber);font-size:12px">⚠ 會覆蓋目前本機的所有資料</span>
-        </p>
-        <button class="btn btn-green" onclick="gdriveLoad()">⬇ 從 Drive 讀取</button>
+        <div class="card-title">🗑 資料管理</div>
+        <button class="btn btn-danger" onclick="confirmClear()">⚠ 清除本帳號所有資料</button>
       </div>
     </div>
 
-    <div class="card gap">
-      <div class="card-title">⚙️ 自動同步</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>每次儲存資料時自動備份到 Google Drive</label>
-          <select id="autoSyncSetting">
-            <option value="no">關閉（手動備份）</option>
-            <option value="yes">開啟（自動備份）</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="saveAutoSync()">儲存設定</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📤 本機備份（不需登入）</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7">直接下載 JSON 備份檔，手動存到任何地方。</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-green" onclick="exportAllData()">⬇ 下載備份 (JSON)</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ 從本機匯入</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Settings ── -->
-  <div class="page" id="page-settings">
-    <div class="card gap">
-      <div class="card-title">👤 個人資訊</div>
-      <div class="form-grid">
-        <div class="form-row">
-          <div class="form-group"><label>姓名</label><input type="text" id="settingName" placeholder="您的姓名"></div>
-          <div class="form-group"><label>員工編號（選填）</label><input type="text" id="settingEmpId"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>到職日期（自動試算特休）</label><input type="date" id="settingJoinDate" oninput="updateAnnualInfo()"></div>
-          <div class="form-group"><label>班別</label>
-            <select id="settingShift">
-              <option value="A">班別A：08:30–12:30 ／ 13:30–17:00</option>
-              <option value="B">班別B：09:00–12:30 ／ 13:30–17:30</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveSettings()">儲存設定</button>
-      </div>
-    </div>
-    <div class="card gap">
-      <div class="card-title">⚙️ 系統設定</div>
-      <div class="form-grid">
-        <div class="form-group"><label>公司打卡系統網址</label><input type="text" id="settingCorpUrl"></div>
-        <div class="form-group"><label>Google Drive Client ID（設定後填入）</label>
-          <input type="text" id="settingClientId" placeholder="xxxx.apps.googleusercontent.com">
-        </div>
-        <div class="form-group"><label>打卡後自動關閉公司頁面</label>
-          <select id="settingAutoClose">
-            <option value="yes">是（3秒後自動關閉）</option>
-            <option value="no">否</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="saveSettings()">儲存</button>
-      </div>
-    </div>
-    <div class="card gap">
-      <div class="card-title">📅 特休日數（勞基法自動試算）</div>
-      <div id="annualLeaveInfo" style="font-size:13px;color:var(--text2);line-height:2.1"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🗑 資料管理</div>
-      <button class="btn btn-danger" onclick="confirmClearData()">⚠ 清除所有本機資料</button>
-    </div>
-  </div>
-
-</div><!-- /main -->
+  </div><!-- /main -->
 </div><!-- /app -->
+</div><!-- /appPage -->
 
-<div class="modal-overlay" id="confirmModal">
+<div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">確認</div>
-    <div class="modal-sub"   id="modalSub"></div>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-sub" id="mSub"></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost"   onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" id="modalConfirmBtn">確定</button>
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" id="mOK">確定</button>
     </div>
   </div>
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 常數
-// ═══════════════════════════════════════════
-const WORK_H   = 7.5;
-const CORP_URL = 'https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx';
-// Google Drive API 設定
-const GDRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
-const GDRIVE_FOLDER    = '差勤系統';
-const GDRIVE_FILENAME  = 'attendance_data.json';
+// ═══════════════════════════════════
+const WORK_H    = 7.5;
+const CORP_URL  = 'https://hqoffice.ccea.org.tw/MASTERSERVICE/mgt/EMPATTEND.aspx';
+const GDRIVE_SCOPE    = 'https://www.googleapis.com/auth/drive.file';
+const GDRIVE_FOLDER   = '差勤系統';
+const GDRIVE_FILENAME = 'attendance_data.json';
+const ACCOUNTS_KEY    = 'atd_accounts_v7';
+const SESSION_KEY     = 'atd_session_v7';
 
 function fmtH(h){
   if(h==null)return'—';if(h>=9000)return'無上限';
@@ -583,83 +605,398 @@ function fmtH(h){
   return`${d} 天 ${r} 小時`;
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 假別定義
-// ═══════════════════════════════════════════
-const LEAVE_DEFS={
-  annual:   {name:'特別休假',color:'green', law:'勞基法§38',  legalMaxH:null},
-  comp:     {name:'補休',    color:'teal',  law:'勞基法§32-1',legalMaxH:null},
-  personal: {name:'事假',    color:'amber', law:'勞基法§43',  legalMaxH:56},
-  sick:     {name:'病假（一般）',color:'blue',law:'勞基法§43',  legalMaxH:240},
-  sick_hosp:{name:'病假（住院）',color:'blue',law:'勞基法§43',  legalMaxH:1460*WORK_H},
-  menstrual:{name:'生理假',  color:'purple',law:'勞基法§14-1',legalMaxH:36*WORK_H},
-  marriage: {name:'婚假',    color:'green', law:'勞基法§43',  legalMaxH:8*WORK_H},
-  paternity:{name:'陪產假',  color:'teal',  law:'勞基法§15-1',legalMaxH:7*WORK_H},
-  maternity:{name:'產假',    color:'purple',law:'性工法§15',  legalMaxH:56*WORK_H},
-  prenatal: {name:'產檢假',  color:'purple',law:'性工法§15-2',legalMaxH:7*WORK_H},
-  funeral3: {name:'喪假（8天）',color:'amber',law:'勞基法§43',legalMaxH:8*WORK_H},
-  funeral6: {name:'喪假（6天）',color:'amber',law:'勞基法§43',legalMaxH:6*WORK_H},
-  funeral1: {name:'喪假（1天）',color:'amber',law:'勞基法§43',legalMaxH:1*WORK_H},
-  public:   {name:'公假',    color:'blue',  law:'勞基法§43',  legalMaxH:9999},
-  typhoon:  {name:'天災假',  color:'red',   law:'天災假辦法', legalMaxH:9999},
-  unpaid:   {name:'留職停薪',color:'amber', law:'勞基法§11',  legalMaxH:9999},
+// ═══════════════════════════════════
+const LD={
+  annual:{name:'特別休假',color:'green',law:'勞基法§38',maxH:null},
+  comp:{name:'補休',color:'teal',law:'勞基法§32-1',maxH:null},
+  personal:{name:'事假',color:'amber',law:'勞基法§43',maxH:56},
+  sick:{name:'病假（一般）',color:'blue',law:'勞基法§43',maxH:240},
+  sick_hosp:{name:'病假（住院）',color:'blue',law:'勞基法§43',maxH:1460*WORK_H},
+  menstrual:{name:'生理假',color:'purple',law:'勞基法§14-1',maxH:36*WORK_H},
+  marriage:{name:'婚假',color:'green',law:'勞基法§43',maxH:8*WORK_H},
+  paternity:{name:'陪產假',color:'teal',law:'勞基法§15-1',maxH:7*WORK_H},
+  maternity:{name:'產假',color:'purple',law:'性工法§15',maxH:56*WORK_H},
+  prenatal:{name:'產檢假',color:'purple',law:'性工法§15-2',maxH:7*WORK_H},
+  funeral3:{name:'喪假（8天）',color:'amber',law:'勞基法§43',maxH:8*WORK_H},
+  funeral6:{name:'喪假（6天）',color:'amber',law:'勞基法§43',maxH:6*WORK_H},
+  funeral1:{name:'喪假（1天）',color:'amber',law:'勞基法§43',maxH:1*WORK_H},
+  public:{name:'公假',color:'blue',law:'勞基法§43',maxH:9999},
+  typhoon:{name:'天災假',color:'red',law:'天災假辦法',maxH:9999},
+  unpaid:{name:'留職停薪',color:'amber',law:'勞基法§11',maxH:9999},
 };
 
-// ═══════════════════════════════════════════
-// 資料庫
-// ═══════════════════════════════════════════
-const DB_KEY='attendance_v5';
-let db=(()=>{try{return JSON.parse(localStorage.getItem(DB_KEY))||mkDB();}catch{return mkDB();}})();
-function mkDB(){return{settings:{name:'',empId:'',joinDate:'',shift:'A',corpUrl:CORP_URL,autoClose:'yes',clientId:'',autoSync:'no'},initBalance:{},adjLog:[],punches:[],leaves:[],overtimes:[]};}
-function saveDB(){
-  localStorage.setItem(DB_KEY,JSON.stringify(db));
-  if(db.settings.autoSync==='yes'&&gAccessToken) gdriveSaveSilent();
+// ═══════════════════════════════════
+// 帳號系統
+// ═══════════════════════════════════
+let CU=null; // current user
+let db=mkDB();
+
+function getAccounts(){try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY))||{};}catch{return{};}}
+function saveAccounts(a){localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a));}
+function getSession(){return localStorage.getItem(SESSION_KEY);}
+function setSession(u){localStorage.setItem(SESSION_KEY,u);}
+function clearSession(){localStorage.removeItem(SESSION_KEY);}
+function dbKey(u){return`atd_data_v7_${u}`;}
+function loadUDB(u){try{return JSON.parse(localStorage.getItem(dbKey(u)))||mkDB();}catch{return mkDB();}}
+function saveUDB(u,d){localStorage.setItem(dbKey(u),JSON.stringify(d));}
+
+function mkDB(){return{settings:{name:'',empId:'',joinDate:'',shift:'A',corpUrl:CORP_URL,autoClose:'yes',clientId:''},initBalance:{},adjLog:[],punches:[],leaves:[],overtimes:[],_lastDriveSave:null,_driveFileId:null};}
+
+async function hashP(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
-// ═══════════════════════════════════════════
+// ─── 登入頁 ─────────────────────────
+function switchTab(t){
+  document.getElementById('tabLogin').classList.toggle('active',t==='login');
+  document.getElementById('tabRegister').classList.toggle('active',t==='register');
+  document.getElementById('formLogin').style.display=t==='login'?'grid':'none';
+  document.getElementById('formRegister').style.display=t==='register'?'grid':'none';
+  ['loginErr','regErr'].forEach(id=>document.getElementById(id).style.display='none');
+}
+async function doRegister(){
+  const u=document.getElementById('regUser').value.trim(),p=document.getElementById('regPwd').value,p2=document.getElementById('regPwd2').value,err=document.getElementById('regErr');
+  if(!u||!p||!p2){showErr(err,'請填寫所有欄位');return;}
+  if(p.length<6){showErr(err,'密碼至少需要6位');return;}
+  if(p!==p2){showErr(err,'兩次密碼不一致');return;}
+  const accs=getAccounts();
+  if(accs[u]){showErr(err,'此帳號已存在');return;}
+  accs[u]={hash:await hashP(p),created:new Date().toISOString()};
+  saveAccounts(accs);
+  const idb=mkDB();idb.settings.name=u;saveUDB(u,idb);
+  err.style.display='none';
+  toast('帳號建立成功！請登入','success');
+  switchTab('login');
+  document.getElementById('loginUser').value=u;
+  renderAccsList();
+}
+async function doLogin(){
+  const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPwd').value,err=document.getElementById('loginErr');
+  if(!u||!p){showErr(err,'請填寫帳號和密碼');return;}
+  const accs=getAccounts();
+  if(!accs[u]){showErr(err,'找不到此帳號，請先建立帳號');return;}
+  if(await hashP(p)!==accs[u].hash){showErr(err,'密碼錯誤');return;}
+  err.style.display='none';
+  await enterApp(u);
+}
+function showErr(el,msg){el.textContent=msg;el.style.display='block';}
+function quickLogin(u){document.getElementById('loginUser').value=u;document.getElementById('loginPwd').focus();}
+function deleteAcc(u,e){
+  e.stopPropagation();
+  if(!confirm(`確定刪除帳號「${u}」及所有資料？`))return;
+  const a=getAccounts();delete a[u];saveAccounts(a);localStorage.removeItem(dbKey(u));renderAccsList();toast(`帳號「${u}」已刪除`,'info');
+}
+function renderAccsList(){
+  const accs=getAccounts(),keys=Object.keys(accs),box=document.getElementById('accsArea');
+  if(!keys.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="laccs-title">本裝置已有帳號</div>`+keys.map(u=>`<div class="lacc" onclick="quickLogin('${u}')"><div class="lacc-av">${u[0].toUpperCase()}</div><div class="lacc-name">${u}</div><span class="lacc-del" onclick="deleteAcc('${u}',event)">刪除</span></div>`).join('');
+}
+
+// ─── 進入主系統 ──────────────────────
+async function enterApp(u){
+  CU=u; setSession(u);
+  db=loadUDB(u);
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appPage').style.display='block';
+  updateSbUser();
+  nav('dashboard');renderTodaySt();initClock();
+
+  // 如果有 clientId，嘗試靜默授權並自動同步
+  if(db.settings.clientId){
+    await trySilentSignIn();
+  }
+}
+
+function doLogout(){
+  showModal('確認登出','確定要登出嗎？本機資料會保留。',()=>{
+    closeModal();CU=null;clearSession();
+    gToken=null;gEmail=null;
+    document.getElementById('appPage').style.display='none';
+    document.getElementById('loginPage').style.display='flex';
+    document.getElementById('loginPwd').value='';
+    renderAccsList();updateSyncPill('local');
+  });
+}
+
+async function changePwd(){
+  const np=document.getElementById('newPwd').value,np2=document.getElementById('newPwd2').value;
+  if(!np||np.length<6){toast('密碼至少6位','error');return;}
+  if(np!==np2){toast('兩次密碼不一致','error');return;}
+  const a=getAccounts();a[CU].hash=await hashP(np);saveAccounts(a);
+  document.getElementById('newPwd').value='';document.getElementById('newPwd2').value='';
+  toast('密碼已更新','success');
+}
+
+// ═══════════════════════════════════
+// Google Drive 全自動同步
+// ═══════════════════════════════════
+let gToken=null,gEmail=null,gTokenClient=null;
+
+// 靜默嘗試登入（不彈出視窗）
+async function trySilentSignIn(){
+  if(!db.settings.clientId)return;
+  if(typeof google==='undefined'||!google.accounts)return;
+  try{
+    // 用 prompt:'' 靜默嘗試，若有快取的 token 就成功
+    gTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:db.settings.clientId,
+      scope:GDRIVE_SCOPE,
+      prompt:'none', // 不顯示視窗
+      callback:async(resp)=>{
+        if(resp.error)return; // 靜默失敗，正常，不提示
+        gToken=resp.access_token;
+        await fetchGEmail();
+        updateDriveUI();
+        // 自動從 Drive 載入最新資料
+        await autoLoadFromDrive();
+      }
+    });
+    gTokenClient.requestAccessToken();
+  }catch{}
+}
+
+// 使用者手動點「連結 Google 帳號」
+function gSignIn(){
+  if(!db.settings.clientId){toast('請先填入 Client ID','error');document.getElementById('clientIdInp').focus();return;}
+  if(typeof google==='undefined'){toast('Google 登入元件尚未載入，請稍後再試','error');return;}
+  gTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:db.settings.clientId,
+    scope:GDRIVE_SCOPE,
+    callback:async(resp)=>{
+      if(resp.error){toast('Google 登入失敗：'+resp.error,'error');return;}
+      gToken=resp.access_token;
+      await fetchGEmail();
+      updateDriveUI();
+      toast('已連結 '+gEmail,'success');
+      await autoLoadFromDrive();
+    }
+  });
+  gTokenClient.requestAccessToken();
+}
+
+function gSignOut(){
+  if(gToken)google.accounts.oauth2.revoke(gToken,()=>{});
+  gToken=null;gEmail=null;updateDriveUI();updateSyncPill('local');toast('已取消連結 Google 帳號','info');
+}
+
+async function fetchGEmail(){
+  try{const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+gToken}});const d=await r.json();gEmail=d.email||'已連結';}catch{gEmail='已連結';}
+}
+
+function updateDriveUI(){
+  const row=document.getElementById('driveStatusRow'),txt=document.getElementById('driveStatusTxt');
+  const sinBtn=document.getElementById('gSignInBtn'),soutBtn=document.getElementById('gSignOutBtn');
+  const sbD=document.getElementById('sbDrive');
+  if(gEmail){
+    if(row)row.innerHTML=`<span>🟢</span><span>已連結：${gEmail}</span>`;
+    if(txt)txt.textContent='已連結：'+gEmail;
+    if(sinBtn)sinBtn.style.display='none';
+    if(soutBtn)soutBtn.style.display='inline-flex';
+    if(sbD){sbD.textContent='☁️ '+gEmail;sbD.style.color='var(--green)';}
+  } else {
+    if(row)row.innerHTML=`<span>⚪</span><span>尚未連結 Google 帳號</span>`;
+    if(sinBtn)sinBtn.style.display='inline-flex';
+    if(soutBtn)soutBtn.style.display='none';
+    if(sbD){sbD.textContent='☁️ 尚未連結';sbD.style.color='var(--text3)';}
+  }
+}
+
+// 找到或建立 Drive 檔案
+async function getOrCreateDriveFile(){
+  // 找資料夾
+  let folderId=db._driveFolderId||null;
+  if(!folderId){
+    const fs=await gFetch(`https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(GDRIVE_FOLDER)}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`);
+    if(fs.files&&fs.files.length>0){folderId=fs.files[0].id;}
+    else{const cf=await gFetch('https://www.googleapis.com/drive/v3/files',{method:'POST',body:JSON.stringify({name:GDRIVE_FOLDER,mimeType:'application/vnd.google-apps.folder'})});folderId=cf.id;}
+    db._driveFolderId=folderId;
+  }
+  // 找檔案
+  let fileId=db._driveFileId||null;
+  if(!fileId){
+    const ff=await gFetch(`https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FILENAME}' and '${folderId}' in parents and trashed=false&fields=files(id)`);
+    if(ff.files&&ff.files.length>0)fileId=ff.files[0].id;
+  }
+  return{folderId,fileId};
+}
+
+async function gFetch(url,opts={}){
+  const headers={'Authorization':'Bearer '+gToken,'Content-Type':'application/json',...(opts.headers||{})};
+  const res=await fetch(url,{...opts,headers});
+  if(!res.ok)throw new Error('Drive API '+res.status);
+  return res.json();
+}
+
+// 自動從 Drive 載入（登入後）
+async function autoLoadFromDrive(){
+  if(!gToken)return;
+  showSyncOverlay('正在從 Google Drive 同步資料...');
+  try{
+    const{fileId,folderId}=await getOrCreateDriveFile();
+    if(fileId){
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
+      if(res.ok){
+        const data=await res.json();
+        // 合併：以 Drive 資料為主，保留 clientId
+        const clientId=db.settings.clientId;
+        db={...mkDB(),...data};
+        db.settings.clientId=clientId;
+        db._driveFileId=fileId;
+        db._driveFolderId=folderId;
+        saveUDB(CU,db);
+        updateSyncPill('synced');
+        renderCurrentPage();
+        updateSbUser();
+      }
+    } else {
+      // Drive 上還沒有檔案，把本機資料存上去
+      await driveUpload(folderId,null);
+      updateSyncPill('synced');
+    }
+    updateLastSyncInfo();
+  }catch(e){
+    updateSyncPill('local');
+    console.warn('Drive sync failed:',e);
+  }finally{hideSyncOverlay();}
+}
+
+// 自動儲存到 Drive（每次 saveDB 後呼叫）
+let _saveTimer=null;
+async function autoSaveToDrive(){
+  if(!gToken||!CU)return;
+  updateSyncPill('syncing');
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async()=>{
+    try{
+      const{fileId,folderId}=await getOrCreateDriveFile();
+      await driveUpload(folderId,fileId);
+      db._lastDriveSave=new Date().toISOString();
+      saveUDB(CU,db); // 更新 fileId
+      updateSyncPill('synced');
+      updateLastSyncInfo();
+    }catch(e){updateSyncPill('local');console.warn('Auto save failed:',e);}
+  },1500); // 1.5秒 debounce，避免頻繁寫入
+}
+
+async function driveUpload(folderId,fileId){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  if(fileId){
+    const res=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:blob});
+    if(!res.ok)throw new Error('Upload failed');
+  } else {
+    const fm=new FormData();fm.append('metadata',new Blob([JSON.stringify({name:GDRIVE_FILENAME,parents:[folderId]})],{type:'application/json'}));fm.append('file',blob);
+    const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+gToken},body:fm});
+    if(!res.ok)throw new Error('Upload failed');
+    const data=await res.json();db._driveFileId=data.id;
+  }
+}
+
+// 手動儲存
+async function manualSave(){
+  if(!gToken){toast('請先連結 Google 帳號','error');return;}
+  showSyncOverlay('正在儲存到 Google Drive...');
+  try{const{fileId,folderId}=await getOrCreateDriveFile();await driveUpload(folderId,fileId);db._lastDriveSave=new Date().toISOString();saveUDB(CU,db);updateSyncPill('synced');updateLastSyncInfo();toast('已儲存到 Google Drive ✓','success');}
+  catch(e){toast('儲存失敗：'+e.message,'error');}
+  finally{hideSyncOverlay();}
+}
+// 手動讀取
+async function manualLoad(){
+  if(!gToken){toast('請先連結 Google 帳號','error');return;}
+  showModal('確認讀取','從 Google Drive 讀取資料會覆蓋目前本機資料，確定繼續？',async()=>{
+    closeModal();showSyncOverlay('正在從 Google Drive 讀取...');
+    try{const{fileId}=await getOrCreateDriveFile();if(!fileId){toast('Drive 上尚無資料','info');hideSyncOverlay();return;}
+    const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
+    if(!res.ok){toast('讀取失敗','error');hideSyncOverlay();return;}
+    const data=await res.json();const cid=db.settings.clientId;db={...mkDB(),...data};db.settings.clientId=cid;db._driveFileId=fileId;saveUDB(CU,db);updateSyncPill('synced');renderCurrentPage();updateSbUser();updateLastSyncInfo();toast('已從 Drive 讀取資料 ✓','success');}
+    catch(e){toast('讀取失敗：'+e.message,'error');}
+    finally{hideSyncOverlay();}
+  });
+}
+
+function updateSyncPill(state){
+  const p=document.getElementById('syncPill');if(!p)return;
+  if(state==='synced'){p.className='sync-status-pill synced';p.textContent='🟢 已同步';}
+  else if(state==='syncing'){p.className='sync-status-pill syncing';p.textContent='🔄 同步中';}
+  else{p.className='sync-status-pill local';p.textContent='⚪ 本機';}
+}
+function updateLastSyncInfo(){
+  const el=document.getElementById('lastSyncInfo');if(!el)return;
+  if(db._lastDriveSave){el.textContent='最後同步：'+new Date(db._lastDriveSave).toLocaleString('zh-TW');}
+}
+function showSyncOverlay(msg){const o=document.getElementById('syncOverlay'),m=document.getElementById('syncMsg');if(o){o.classList.add('show');}if(m)m.textContent=msg||'同步中...';}
+function hideSyncOverlay(){const o=document.getElementById('syncOverlay');if(o)o.classList.remove('show');}
+
+function saveClientId(){
+  const cid=document.getElementById('clientIdInp').value.trim();
+  if(!cid){toast('請填入 Client ID','error');return;}
+  db.settings.clientId=cid;saveDB();toast('Client ID 已儲存，請按「連結 Google 帳號」','success');
+}
+
+// ═══════════════════════════════════
+// 資料庫（包含自動同步）
+// ═══════════════════════════════════
+function saveDB(){
+  if(!CU)return;
+  saveUDB(CU,db);
+  autoSaveToDrive(); // 每次儲存後自動同步
+}
+
+// ═══════════════════════════════════
 // 特休 & 餘額
-// ═══════════════════════════════════════════
-function annualDays(jd){
-  if(!jd)return 0;
-  const m=(Date.now()-new Date(jd))/(1000*60*60*24*30.44);if(m<6)return 0;
+// ═══════════════════════════════════
+function annDays(jd){
+  if(!jd)return 0;const m=(Date.now()-new Date(jd))/(1000*60*60*24*30.44);if(m<6)return 0;
   const y=m/12;if(y<1)return 3;if(y<2)return 7;if(y<3)return 10;if(y<5)return 14;if(y<10)return 15;
   return Math.min(15+Math.floor(y-10),30);
 }
-function getBalance(){
+function getBal(){
   const bal={},ib=db.initBalance||{};
-  Object.keys(LEAVE_DEFS).forEach(k=>{
+  Object.keys(LD).forEach(k=>{
     const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0);
     let start;
-    if(k==='annual') start=ib[k]!=null?ib[k]:annualDays(db.settings.joinDate)*WORK_H;
+    if(k==='annual')start=ib[k]!=null?ib[k]:annDays(db.settings.joinDate)*WORK_H;
     else if(k==='comp'){const e=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);start=(ib[k]!=null?ib[k]:0)+e;}
-    else start=ib[k]!=null?ib[k]:(LEAVE_DEFS[k].legalMaxH||9999);
+    else start=ib[k]!=null?ib[k]:(LD[k].maxH||9999);
     bal[k]=Math.max(start-used,0);
   });
   return bal;
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 導覽
-// ═══════════════════════════════════════════
-const PAGE_TITLES={dashboard:'首頁總覽',punch:'打卡',leave:'請假管理',overtime:'加班補休',records:'出勤紀錄',calendar:'月曆視圖',adjust:'假別餘額調整',gdrive:'Google Drive',settings:'設定'};
+// ═══════════════════════════════════
+const PT={dashboard:'首頁總覽',punch:'打卡',leave:'請假管理',overtime:'加班補休',records:'出勤紀錄',calendar:'月曆視圖',adjust:'假別餘額調整',drivesettings:'Google Drive 設定',settings:'設定'};
+let _currentPage='dashboard';
 function nav(page){
+  _currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.trim().includes(PAGE_TITLES[page].slice(0,3)))n.classList.add('active');});
-  document.getElementById('topbarTitle').textContent=PAGE_TITLES[page];
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.trim().includes((PT[page]||'').slice(0,3)))n.classList.add('active');});
+  document.getElementById('topbarTitle').textContent=PT[page]||'';
   closeSidebar();
-  ({dashboard:renderDashboard,leave:renderLeavePage,overtime:renderOvertimePage,records:renderRecordsPage,calendar:renderCalendar,adjust:renderAdjustPage,gdrive:renderGdrivePage,settings:renderSettings}[page]||function(){})();
+  ({dashboard:renderDash,leave:renderLeavePage,overtime:renderOTPage,records:renderRecPage,calendar:renderCal,adjust:renderAdjPage,drivesettings:renderDriveSettings,settings:renderSettings}[page]||function(){})();
 }
+function renderCurrentPage(){nav(_currentPage);}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('bgOverlay').classList.toggle('open');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('bgOverlay').classList.remove('open');}
+function updateSbUser(){
+  const s=db.settings;
+  document.getElementById('sbName').textContent=s.name||CU||'—';
+  document.getElementById('sbShift').textContent=SHIFT[s.shift||'A'];
+  updateDriveUI();
+}
+const SHIFT={A:'班別A：08:30–17:00',B:'班別B：09:00–17:30'};
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // Dashboard
-// ═══════════════════════════════════════════
-function renderDashboard(){
+// ═══════════════════════════════════
+function renderDash(){
   const now=new Date(),m=now.getMonth(),y=now.getFullYear();
-  const bal=getBalance(),annD=annualDays(db.settings.joinDate);
+  const bal=getBal(),annD=annDays(db.settings.joinDate);
   const mP=db.punches.filter(p=>{const d=new Date(p.time);return d.getMonth()===m&&d.getFullYear()===y;});
   const mL=db.leaves.filter(l=>{const d=new Date(l.start);return d.getMonth()===m&&d.getFullYear()===y;});
   const mOTH=db.overtimes.filter(o=>{const d=new Date(o.date);return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,o)=>s+(o.actualH||0),0);
@@ -669,578 +1006,277 @@ function renderDashboard(){
     <div class="stat-card"><div class="stat-label">本月加班</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">全數轉補休</div></div>
     <div class="stat-card"><div class="stat-label">本月打卡</div><div class="stat-value c-blue">${mP.length}</div><div class="stat-sub">筆紀錄</div></div>
     <div class="stat-card"><div class="stat-label">本月請假</div><div class="stat-value c-purple">${fmtH(mL.reduce((s,l)=>s+(l.hours||0),0))}</div><div class="stat-sub">${mL.length}筆</div></div>`;
-  const compE=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);
-  const compU=db.leaves.filter(l=>l.leaveType==='comp').reduce((s,l)=>s+(l.hours||0),0);
-  const compI=(db.initBalance||{}).comp||0;
-  document.getElementById('compQuickView').innerHTML=`
-    <div style="text-align:center;padding:10px 0">
-      <div style="font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal)">${fmtH(bal.comp)}</div>
-      ${compI>0?`<div style="font-size:12px;color:var(--text3);margin-top:6px">初始：${fmtH(compI)}</div>`:''}
-      <div style="font-size:12px;color:var(--text3)">加班換算：${fmtH(compE)}</div>
-      <div style="font-size:12px;color:var(--text3)">已使用：${fmtH(compU)}</div>
-    </div>`;
-  document.getElementById('leaveQuickView').innerHTML=
-    ['annual','comp','personal','sick'].map(k=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
-        <span style="color:var(--text2)">${LEAVE_DEFS[k].name}</span>
-        <span class="c-${LEAVE_DEFS[k].color}" style="font-family:'JetBrains Mono',monospace;font-size:11px">${fmtH(bal[k])}</span>
-      </div>`).join('')+
-    `<div style="font-size:11px;margin-top:8px;text-align:right"><span onclick="nav('leave')" style="cursor:pointer;color:var(--accent)">查看全部 →</span></div>`;
+  const cE=db.overtimes.reduce((s,o)=>s+(o.compH||0),0),cU=db.leaves.filter(l=>l.leaveType==='comp').reduce((s,l)=>s+(l.hours||0),0),cI=(db.initBalance||{}).comp||0;
+  document.getElementById('compView').innerHTML=`<div style="text-align:center;padding:10px 0"><div style="font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal)">${fmtH(bal.comp)}</div>${cI>0?`<div style="font-size:12px;color:var(--text3);margin-top:6px">初始：${fmtH(cI)}</div>`:''}<div style="font-size:12px;color:var(--text3)">加班換算：${fmtH(cE)}</div><div style="font-size:12px;color:var(--text3)">已使用：${fmtH(cU)}</div></div>`;
+  document.getElementById('leaveView').innerHTML=['annual','comp','personal','sick'].map(k=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text2)">${LD[k].name}</span><span class="c-${LD[k].color}" style="font-family:'JetBrains Mono',monospace;font-size:11px">${fmtH(bal[k])}</span></div>`).join('')+`<div style="font-size:11px;margin-top:8px;text-align:right"><span onclick="nav('leave')" style="cursor:pointer;color:var(--accent)">查看全部 →</span></div>`;
   const ws=new Date();ws.setDate(ws.getDate()-6);
-  const recent=[...db.punches].filter(p=>new Date(p.time)>=ws).sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
+  const rec=[...db.punches].filter(p=>new Date(p.time)>=ws).sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
   const dc={checkin:'var(--green)',checkout:'var(--blue)',overtime:'var(--amber)',business:'var(--purple)'};
   const lb={checkin:'簽到（上班）',checkout:'離開（下班）',overtime:'申請加班',business:'公出／請假'};
-  document.getElementById('recentRecords').innerHTML=recent.length
-    ?recent.map(p=>`<div class="record-item"><div class="record-dot" style="background:${dc[p.type]}"></div><div class="record-type">${lb[p.type]}</div><div class="record-time">${fmtDT(p.time)}</div><div style="font-size:11px;color:var(--text3)">${p.source==='auto'?'🔄':'✋'}</div></div>`).join('')
-    :'<div style="color:var(--text3);font-size:13px;padding:12px 0">本週尚無打卡紀錄</div>';
+  document.getElementById('recentRecs').innerHTML=rec.length?rec.map(p=>`<div class="record-item"><div class="record-dot" style="background:${dc[p.type]}"></div><div class="record-type">${lb[p.type]}</div><div class="record-time">${fmtDT(p.time)}</div><div style="font-size:11px;color:var(--text3)">${p.source==='auto'?'🔄':'✋'}</div></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:12px 0">本週尚無打卡紀錄</div>';
 }
 
-// ═══════════════════════════════════════════
-// 打卡 & 公司紀錄
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// 打卡
+// ═══════════════════════════════════
 function doPunch(type){
   const lb={checkin:'簽到（上班）',checkout:'離開（下班）',overtime:'申請加班',business:'公出／請假'};
   const bid={checkin:'MainContent_btnSignIN',checkout:'MainContent_btnSingOut',overtime:'MainContent_btnSick',business:'MainContent_btnBusiness'};
   const rec={id:Date.now(),type,time:new Date().toISOString(),source:'manual',note:''};
-  db.punches.push(rec);saveDB();renderTodayStatus();
+  db.punches.push(rec);saveDB();renderTodaySt();
   toast(`${lb[type]} 已記錄 ${fmtT(rec.time)}`,'success');
   const url=db.settings.corpUrl||CORP_URL,b=bid[type];
   if(window.chrome&&chrome.runtime){
-    try{chrome.runtime.sendMessage('attendance-ext',{action:'punch',btnId:b,url},res=>{
-      if(res?.success){rec.source='auto';saveDB();setSyncOK(true);toast('公司系統同步成功 ✓','success');setTimeout(fetchCorpRecords,3000);}
+    try{chrome.runtime.sendMessage('attendance-ext',{action:'punch',btnId:b,url},r=>{
+      if(r?.success){rec.source='auto';saveDB();setSdot(true);toast('公司系統同步 ✓','success');setTimeout(fetchCorpRecs,3000);}
       else openCorp(url,b);
     });}catch{openCorp(url,b);}
-  } else openCorp(url,b);
+  }else openCorp(url,b);
 }
-function openCorp(url,b){setSyncOK(false);window.open(url+'?autoclick='+b,'corp','width=920,height=720');toast('已開啟公司打卡頁面','info');}
-function setSyncOK(ok){
-  const dot=document.getElementById('syncDot'),st=document.getElementById('syncStatus');
-  if(!dot)return;dot.className='sync-dot'+(ok?' ok':'');
-  st.textContent=ok?'已與公司系統同步':'公司系統需手動確認';
-}
-function renderTodayStatus(){
-  const ts=new Date().toDateString();
-  const tp=db.punches.filter(p=>new Date(p.time).toDateString()===ts);
+function openCorp(url,b){setSdot(false);window.open(url+'?autoclick='+b,'corp','width=920,height=720');toast('已開啟公司打卡頁面','info');}
+function setSdot(ok){const d=document.getElementById('syncDot'),s=document.getElementById('syncSt');if(!d)return;d.className='sdot'+(ok?' ok':'');s.textContent=ok?'已與公司系統同步':'公司系統需手動確認';}
+function renderTodaySt(){
+  const ts=new Date().toDateString(),tp=db.punches.filter(p=>new Date(p.time).toDateString()===ts);
   const dc={checkin:'var(--green)',checkout:'var(--blue)',overtime:'var(--amber)',business:'var(--purple)'};
   const lb={checkin:'簽到（上班）',checkout:'離開（下班）',overtime:'申請加班',business:'公出／請假'};
-  const el=document.getElementById('todayStatus');
-  if(el)el.innerHTML=tp.length
-    ?tp.map(p=>`<div>● <span style="color:${dc[p.type]}">${lb[p.type]}</span>　<span style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${fmtT(p.time)}</span></div>`).join('')
-    :'<span style="color:var(--text3)">今日尚無打卡紀錄</span>';
+  const el=document.getElementById('todayStatus');if(!el)return;
+  el.innerHTML=tp.length?tp.map(p=>`<div>● <span style="color:${dc[p.type]}">${lb[p.type]}</span>　<span style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${fmtT(p.time)}</span></div>`).join(''):'<span style="color:var(--text3)">今日尚無打卡紀錄</span>';
 }
-function fetchCorpRecords(){
-  const area=document.getElementById('corpRecordsArea');if(!area)return;
+function fetchCorpRecs(){
+  const area=document.getElementById('corpArea');if(!area)return;
   area.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">🔄 讀取中...</div>';
-  if(window.chrome&&chrome.runtime){
-    try{chrome.runtime.sendMessage('attendance-ext',{action:'getRecords'},function(records){renderCorpRecords(records);});return;}
-    catch(e){}
-  }
-  renderCorpRecordsFallback(area);
+  if(window.chrome&&chrome.runtime){try{chrome.runtime.sendMessage('attendance-ext',{action:'getRecords'},r=>renderCorpRecs(r));return;}catch{}}
+  area.innerHTML=`<div style="font-size:13px;color:var(--text2);line-height:1.8">尚未安裝擴充功能或公司系統未開啟。<br><a href="${CORP_URL}" target="_blank" style="color:var(--blue)">點此開啟公司打卡系統 →</a></div>`;
 }
-function renderCorpRecords(records){
-  const area=document.getElementById('corpRecordsArea');if(!area)return;
-  if(!records||records.length===0){renderCorpRecordsFallback(area);return;}
+function renderCorpRecs(r){
+  const area=document.getElementById('corpArea');if(!area)return;
+  if(!r||!r.length){area.innerHTML=`<div style="font-size:13px;color:var(--text2)">無法取得紀錄，<a href="${CORP_URL}" target="_blank" style="color:var(--blue)">點此開啟公司系統 →</a></div>`;return;}
   const tc={'簽到(上班)':'var(--green)','離開(下班)':'var(--blue)','申請加班':'var(--amber)','公出/請假':'var(--purple)'};
-  area.innerHTML=`<table class="corp-record-table"><thead><tr><th>事由</th><th>時間</th><th>補休/備注</th></tr></thead><tbody>
-    ${records.map(r=>`<tr><td style="color:${tc[r.type]||'var(--text2)'};font-weight:500">${r.type||'—'}</td><td style="font-family:'JetBrains Mono',monospace">${r.time||'—'}</td><td style="color:var(--text3)">${r.coverTime||r.note||'—'}</td></tr>`).join('')}
-  </tbody></table>`;
-}
-function renderCorpRecordsFallback(area){
-  area.innerHTML=`<div style="font-size:13px;color:var(--text2);line-height:1.8">尚未安裝擴充功能，或公司系統尚未開啟。<br><a href="${CORP_URL}" target="_blank" style="color:var(--blue)">點此開啟公司打卡系統 →</a></div>`;
+  area.innerHTML=`<table class="corp-rt"><thead><tr><th>事由</th><th>時間</th><th>備注</th></tr></thead><tbody>${r.map(x=>`<tr><td style="color:${tc[x.type]||'var(--text2)'};font-weight:500">${x.type||'—'}</td><td style="font-family:'JetBrains Mono',monospace">${x.time||'—'}</td><td style="color:var(--text3)">${x.coverTime||x.note||'—'}</td></tr>`).join('')}</tbody></table>`;
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 請假
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 function renderLeavePage(){
-  const bal=getBalance();
-  document.getElementById('leaveBalanceGrid').innerHTML=Object.entries(LEAVE_DEFS).map(([k,v])=>`
-    <div class="leave-card"><div class="leave-name">${v.name}</div><div class="leave-bal c-${v.color}">${fmtH(bal[k])}</div><div class="leave-law">${v.law}</div></div>`).join('');
+  const bal=getBal();
+  document.getElementById('leaveGrid').innerHTML=Object.entries(LD).map(([k,v])=>`<div class="leave-card"><div class="leave-name">${v.name}</div><div class="leave-bal c-${v.color}">${fmtH(bal[k])}</div><div class="leave-law">${v.law}</div></div>`).join('');
   renderLeaveTable();
 }
-function onLeaveTypeChange(){calcLeaveDays();checkLeaveWarn();}
+function onLeaveTypeChange(){calcLeaveDays();chkLeaveWarn();}
 function calcLeaveDays(){
   const s=document.getElementById('leaveStart').value;if(!s)return;
-  const e=document.getElementById('leaveEnd').value||s;
-  const days=Math.max(1,Math.round((new Date(e)-new Date(s))/86400000)+1);
-  const h=Math.round(days*WORK_H);
+  const e=document.getElementById('leaveEnd').value||s,days=Math.max(1,Math.round((new Date(e)-new Date(s))/86400000)+1),h=Math.round(days*WORK_H);
   document.getElementById('leaveHours').value=h;
-  document.getElementById('leaveHoursPreview').textContent=`📐 ${days}天 × ${WORK_H}h = ${h}小時 → ${fmtH(h)}`;
-  checkLeaveWarn();
+  document.getElementById('leavePrev').textContent=`📐 ${days}天 × ${WORK_H}h = ${h}h → ${fmtH(h)}`;
+  chkLeaveWarn();
 }
-function checkLeaveWarn(){
-  const type=document.getElementById('leaveType').value,h=parseFloat(document.getElementById('leaveHours').value)||0;
-  const b=getBalance()[type];
-  document.getElementById('leaveWarning').style.display=(b!=null&&b<9000&&h>0&&h>b)?'block':'none';
-}
+function chkLeaveWarn(){const t=document.getElementById('leaveType').value,h=parseFloat(document.getElementById('leaveHours').value)||0,b=getBal()[t];document.getElementById('leaveWarn').style.display=(b!=null&&b<9000&&h>0&&h>b)?'block':'none';}
 function submitLeave(){
-  const type=document.getElementById('leaveType').value,start=document.getElementById('leaveStart').value;
-  const end=document.getElementById('leaveEnd').value||start,hours=parseFloat(document.getElementById('leaveHours').value);
-  const note=document.getElementById('leaveNote').value;
+  const type=document.getElementById('leaveType').value,start=document.getElementById('leaveStart').value,end=document.getElementById('leaveEnd').value||start,hours=parseFloat(document.getElementById('leaveHours').value),note=document.getElementById('leaveNote').value;
   if(!start||!hours||hours<1){toast('請填寫日期和時數','error');return;}
-  const b=getBalance()[type];
-  if(b!=null&&b<9000&&hours>b){
-    showModal('⚠️ 假別餘額不足',`目前「${LEAVE_DEFS[type].name}」剩餘 ${fmtH(b)}\n您申請 ${fmtH(hours)}\n\n確定仍要送出？`,()=>{doAddLeave(type,start,end,hours,note);closeModal();});
-  } else doAddLeave(type,start,end,hours,note);
+  const b=getBal()[type];
+  if(b!=null&&b<9000&&hours>b){showModal('⚠️ 假別餘額不足',`目前「${LD[type].name}」剩餘 ${fmtH(b)}\n您申請 ${fmtH(hours)}\n\n確定仍要送出？`,()=>{doAddLeave(type,start,end,hours,note);closeModal();});}
+  else doAddLeave(type,start,end,hours,note);
 }
-function doAddLeave(type,start,end,hours,note){
-  db.leaves.push({id:Date.now(),leaveType:type,start,end,hours,note,status:'pending'});
-  saveDB();renderLeavePage();clearLeaveForm();toast(`${LEAVE_DEFS[type].name} ${fmtH(hours)} 已記錄`,'success');
-}
-function clearLeaveForm(){
-  ['leaveStart','leaveEnd','leaveHours','leaveNote'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('leaveType').selectedIndex=0;
-  document.getElementById('leaveWarning').style.display='none';
-  document.getElementById('leaveHoursPreview').textContent='';
-}
-function deleteLeave(id){db.leaves=db.leaves.filter(l=>l.id!==id);saveDB();renderLeavePage();}
+function doAddLeave(t,s,e,h,n){db.leaves.push({id:Date.now(),leaveType:t,start:s,end:e,hours:h,note:n,status:'pending'});saveDB();renderLeavePage();clearLeaveForm();toast(`${LD[t].name} ${fmtH(h)} 已記錄`,'success');}
+function clearLeaveForm(){['leaveStart','leaveEnd','leaveHours','leaveNote'].forEach(id=>document.getElementById(id).value='');document.getElementById('leaveType').selectedIndex=0;document.getElementById('leaveWarn').style.display='none';document.getElementById('leavePrev').textContent='';}
+function delLeave(id){db.leaves=db.leaves.filter(l=>l.id!==id);saveDB();renderLeavePage();}
 function renderLeaveTable(){
   const rows=[...db.leaves].sort((a,b)=>new Date(b.start)-new Date(a.start));
-  document.getElementById('leaveTableBody').innerHTML=rows.length
-    ?rows.map(l=>`<tr><td>${LEAVE_DEFS[l.leaveType]?.name||l.leaveType}</td><td>${l.start}</td><td>${l.end||l.start}</td><td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${l.hours}h</td><td style="color:var(--teal);font-size:12px">${fmtH(l.hours)}</td><td><span class="badge badge-${LEAVE_DEFS[l.leaveType]?.color||'amber'}">${l.status==='pending'?'申請中':'已核准'}</span></td><td style="color:var(--text3);font-size:12px">${l.note||'—'}</td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="deleteLeave(${l.id})">刪除</button></td></tr>`).join('')
-    :'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">尚無請假紀錄</td></tr>';
+  document.getElementById('leaveBody').innerHTML=rows.length?rows.map(l=>`<tr><td>${LD[l.leaveType]?.name||l.leaveType}</td><td>${l.start}</td><td>${l.end||l.start}</td><td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${l.hours}h</td><td style="color:var(--teal);font-size:12px">${fmtH(l.hours)}</td><td><span class="badge badge-${LD[l.leaveType]?.color||'amber'}">${l.status==='pending'?'申請中':'已核准'}</span></td><td style="color:var(--text3);font-size:12px">${l.note||'—'}</td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="delLeave(${l.id})">刪除</button></td></tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">尚無請假紀錄</td></tr>';
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 加班
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 function toCompH(h){return Math.max(Math.round(h*2)/2,1);}
-function timeToH(t){const[a,b]=t.split(':').map(Number);return a+b/60;}
-function calcOTPreview(){
-  const s=document.getElementById('otStart').value,e=document.getElementById('otEnd').value;
-  const el=document.getElementById('otCalcResult');if(!s||!e){el.textContent='';return;}
-  let h=timeToH(e)-timeToH(s);if(h<=0)h+=24;
-  el.textContent=`⏱ 實際加班：${h.toFixed(1)}小時（${fmtH(h)}）→ 補休換算：${fmtH(toCompH(h))}`;
+function t2h(t){const[a,b]=t.split(':').map(Number);return a+b/60;}
+function calcOTPrev(){
+  const s=document.getElementById('otStart').value,e=document.getElementById('otEnd').value,el=document.getElementById('otPrev');
+  if(!s||!e){el.textContent='';return;}let h=t2h(e)-t2h(s);if(h<=0)h+=24;
+  el.textContent=`⏱ 實際：${h.toFixed(1)}h（${fmtH(h)}）→ 補休：${fmtH(toCompH(h))}`;
 }
-function renderOvertimePage(){
-  const bal=getBalance(),compE=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);
+function renderOTPage(){
+  const bal=getBal(),cE=db.overtimes.reduce((s,o)=>s+(o.compH||0),0);
   const now=new Date(),m=now.getMonth(),y=now.getFullYear();
   const mOTH=db.overtimes.filter(o=>{const d=new Date(o.date);return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,o)=>s+(o.actualH||0),0);
-  document.getElementById('otSummary').innerHTML=`
-    <div class="stat-card"><div class="stat-label">補休餘額</div><div class="stat-value c-teal">${fmtH(bal.comp)}</div><div class="stat-sub">可用補休</div></div>
-    <div class="stat-card"><div class="stat-label">本月加班</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">本月實際</div></div>
-    <div class="stat-card"><div class="stat-label">累積換算</div><div class="stat-value c-green">${fmtH(compE)}</div><div class="stat-sub">歷史補休</div></div>`;
+  document.getElementById('otSummary').innerHTML=`<div class="stat-card"><div class="stat-label">補休餘額</div><div class="stat-value c-teal">${fmtH(bal.comp)}</div><div class="stat-sub">可用</div></div><div class="stat-card"><div class="stat-label">本月加班</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">本月</div></div><div class="stat-card"><div class="stat-label">累積換算</div><div class="stat-value c-green">${fmtH(cE)}</div><div class="stat-sub">歷史</div></div>`;
   const tl={workday:'平日',rest:'休息日',holiday:'例假日',national:'國定假日'};
   const rows=[...db.overtimes].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  document.getElementById('otTableBody').innerHTML=rows.length
-    ?rows.map(o=>`<tr><td>${o.date}</td><td><span class="badge badge-amber">${tl[o.otType]}</span></td><td>${o.actualH}h<br><span style="font-size:11px;color:var(--text3)">${fmtH(o.actualH)}</span></td><td style="color:var(--teal)">${fmtH(o.compH)}</td><td style="color:var(--text3);font-size:12px">${o.note||'—'}</td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="deleteOT(${o.id})">刪除</button></td></tr>`).join('')
-    :'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">尚無加班紀錄</td></tr>';
+  document.getElementById('otBody').innerHTML=rows.length?rows.map(o=>`<tr><td>${o.date}</td><td><span class="badge badge-amber">${tl[o.otType]}</span></td><td>${o.actualH}h<br><span style="font-size:11px;color:var(--text3)">${fmtH(o.actualH)}</span></td><td style="color:var(--teal)">${fmtH(o.compH)}</td><td style="color:var(--text3);font-size:12px">${o.note||'—'}</td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="delOT(${o.id})">刪除</button></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">尚無加班紀錄</td></tr>';
 }
-function submitOvertime(){
-  const date=document.getElementById('otDate').value,otType=document.getElementById('otType').value;
-  const start=document.getElementById('otStart').value,end=document.getElementById('otEnd').value;
-  const note=document.getElementById('otNote').value;
+function submitOT(){
+  const date=document.getElementById('otDate').value,otType=document.getElementById('otType').value,start=document.getElementById('otStart').value,end=document.getElementById('otEnd').value,note=document.getElementById('otNote').value;
   if(!date||!start||!end){toast('請填寫日期和時間','error');return;}
-  let h=timeToH(end)-timeToH(start);if(h<=0)h+=24;
-  const actualH=Math.round(h*10)/10,compH=toCompH(actualH);
-  db.overtimes.push({id:Date.now(),date,otType,start,end,actualH,compH,note});
-  saveDB();renderOvertimePage();
-  toast(`加班 ${fmtH(actualH)} → 補休 ${fmtH(compH)} 已存入`,'success');
+  let h=t2h(end)-t2h(start);if(h<=0)h+=24;
+  const aH=Math.round(h*10)/10,cH=toCompH(aH);
+  db.overtimes.push({id:Date.now(),date,otType,start,end,actualH:aH,compH:cH,note});saveDB();renderOTPage();
+  toast(`加班 ${fmtH(aH)} → 補休 ${fmtH(cH)} 已存入`,'success');
   ['otStart','otEnd','otNote'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('otCalcResult').textContent='';
+  document.getElementById('otPrev').textContent='';
 }
-function deleteOT(id){db.overtimes=db.overtimes.filter(o=>o.id!==id);saveDB();renderOvertimePage();}
+function delOT(id){db.overtimes=db.overtimes.filter(o=>o.id!==id);saveDB();renderOTPage();}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 整月出勤
-// ═══════════════════════════════════════════
-let recY=new Date().getFullYear(),recM=new Date().getMonth();
-function recChangeMonth(d){recM+=d;if(recM>11){recM=0;recY++;}else if(recM<0){recM=11;recY--;}renderRecordsPage();}
-function recGoToday(){recY=new Date().getFullYear();recM=new Date().getMonth();renderRecordsPage();}
-function renderRecordsPage(){
+// ═══════════════════════════════════
+let rY=new Date().getFullYear(),rM=new Date().getMonth();
+function recCM(d){rM+=d;if(rM>11){rM=0;rY++;}else if(rM<0){rM=11;rY--;}renderRecPage();}
+function recToday(){rY=new Date().getFullYear();rM=new Date().getMonth();renderRecPage();}
+function renderRecPage(){
   const mN=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('recMonthTitle').textContent=`${recY} 年 ${mN[recM]}`;
-  const mf=`${recY}-${pad(recM+1)}`;
-  const mP=db.punches.filter(p=>p.time.startsWith(mf));
-  const mL=db.leaves.filter(l=>l.start.startsWith(mf));
-  const mOT=db.overtimes.filter(o=>o.date.startsWith(mf));
-  const mOTH=mOT.reduce((s,o)=>s+(o.actualH||0),0),mLH=mL.reduce((s,l)=>s+(l.hours||0),0);
-  document.getElementById('recMonthStats').innerHTML=`
-    <div class="card-title">📈 ${recY}年${mN[recM]} 統計</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px">
-      <div class="stat-card"><div class="stat-label">上班打卡</div><div class="stat-value c-green">${mP.filter(p=>p.type==='checkin').length}</div><div class="stat-sub">天</div></div>
-      <div class="stat-card"><div class="stat-label">請假時數</div><div class="stat-value c-purple">${fmtH(mLH)}</div><div class="stat-sub">${mL.length}筆</div></div>
-      <div class="stat-card"><div class="stat-label">加班時數</div><div class="stat-value c-amber">${fmtH(mOTH)}</div><div class="stat-sub">${mOT.length}筆</div></div>
-      <div class="stat-card"><div class="stat-label">打卡總筆</div><div class="stat-value c-blue">${mP.length}</div><div class="stat-sub">筆</div></div>
-    </div>`;
-  // 日曆
-  document.getElementById('recCalHeader').innerHTML=['日','一','二','三','四','五','六'].map(d=>`<div class="month-header-cell">${d}</div>`).join('');
-  const first=new Date(recY,recM,1).getDay(),days=new Date(recY,recM+1,0).getDate();
-  const tod=new Date(),isNow=recY===tod.getFullYear()&&recM===tod.getMonth();
-  let body='';
-  for(let i=0;i<first;i++) body+='<div class="month-day empty"></div>';
+  document.getElementById('recTitle').textContent=`${rY} 年 ${mN[rM]}`;
+  const mf=`${rY}-${pad(rM+1)}`;
+  const mP=db.punches.filter(p=>p.time.startsWith(mf)),mL=db.leaves.filter(l=>l.start.startsWith(mf)),mOT=db.overtimes.filter(o=>o.date.startsWith(mf));
+  document.getElementById('recStats').innerHTML=`<div class="card-title">📈 ${rY}年${mN[rM]} 統計</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px"><div class="stat-card"><div class="stat-label">上班打卡</div><div class="stat-value c-green">${mP.filter(p=>p.type==='checkin').length}</div><div class="stat-sub">天</div></div><div class="stat-card"><div class="stat-label">請假時數</div><div class="stat-value c-purple">${fmtH(mL.reduce((s,l)=>s+(l.hours||0),0))}</div><div class="stat-sub">${mL.length}筆</div></div><div class="stat-card"><div class="stat-label">加班時數</div><div class="stat-value c-amber">${fmtH(mOT.reduce((s,o)=>s+(o.actualH||0),0))}</div><div class="stat-sub">${mOT.length}筆</div></div><div class="stat-card"><div class="stat-label">打卡總筆</div><div class="stat-value c-blue">${mP.length}</div><div class="stat-sub">筆</div></div></div>`;
+  document.getElementById('recCalHdr').innerHTML=['日','一','二','三','四','五','六'].map(d=>`<div class="mhc">${d}</div>`).join('');
+  const first=new Date(rY,rM,1).getDay(),days=new Date(rY,rM+1,0).getDate();
+  const tod=new Date(),isNow=rY===tod.getFullYear()&&rM===tod.getMonth();
+  let body='';for(let i=0;i<first;i++)body+='<div class="mday empty"></div>';
   for(let d=1;d<=days;d++){
-    const ds=`${recY}-${pad(recM+1)}-${pad(d)}`;
-    const dp=db.punches.filter(p=>p.time.startsWith(ds));
-    const dl=db.leaves.filter(l=>l.start<=ds&&(l.end||l.start)>=ds);
-    const dot=db.overtimes.filter(o=>o.date===ds);
-    const isT=isNow&&d===tod.getDate();
-    let tags='';
+    const ds=`${rY}-${pad(rM+1)}-${pad(d)}`;
+    const dp=db.punches.filter(p=>p.time.startsWith(ds)),dl=db.leaves.filter(l=>l.start<=ds&&(l.end||l.start)>=ds),dot=db.overtimes.filter(o=>o.date===ds);
+    const isT=isNow&&d===tod.getDate();let tags='';
     const ci=dp.find(p=>p.type==='checkin'),co=dp.find(p=>p.type==='checkout');
-    if(ci) tags+=`<span class="day-tag tag-checkin">↑ ${fmtT(ci.time).slice(0,5)}</span>`;
-    if(co) tags+=`<span class="day-tag tag-checkout">↓ ${fmtT(co.time).slice(0,5)}</span>`;
-    if(dl.length) tags+=`<span class="day-tag tag-leave">假 ${LEAVE_DEFS[dl[0].leaveType]?.name.slice(0,2)||'—'}</span>`;
-    if(dot.length) tags+=`<span class="day-tag tag-ot">OT ${fmtH(dot.reduce((s,o)=>s+(o.actualH||0),0))}</span>`;
-    body+=`<div class="month-day${isT?' today':''}"><div class="day-num">${d}</div>${tags}</div>`;
+    if(ci)tags+=`<span class="dtag tag-ci">↑ ${fmtT(ci.time).slice(0,5)}</span>`;
+    if(co)tags+=`<span class="dtag tag-co">↓ ${fmtT(co.time).slice(0,5)}</span>`;
+    if(dl.length)tags+=`<span class="dtag tag-lv">假 ${LD[dl[0].leaveType]?.name.slice(0,2)||'—'}</span>`;
+    if(dot.length)tags+=`<span class="dtag tag-ot">OT ${fmtH(dot.reduce((s,o)=>s+(o.actualH||0),0))}</span>`;
+    body+=`<div class="mday${isT?' today':''}"><div class="dnum">${d}</div>${tags}</div>`;
   }
-  const rem=(first+days)%7===0?0:7-(first+days)%7;
-  for(let i=0;i<rem;i++) body+='<div class="month-day empty"></div>';
+  const rem=(first+days)%7===0?0:7-(first+days)%7;for(let i=0;i<rem;i++)body+='<div class="mday empty"></div>';
   document.getElementById('recCalBody').innerHTML=body;
-  // 明細
   const recs=[...db.punches].filter(p=>p.time.startsWith(mf)).sort((a,b)=>new Date(b.time)-new Date(a.time));
   const dc={checkin:'var(--green)',checkout:'var(--blue)',overtime:'var(--amber)',business:'var(--purple)'};
   const lb={checkin:'簽到（上班）',checkout:'離開（下班）',overtime:'申請加班',business:'公出／請假'};
-  document.getElementById('recordsTableBody').innerHTML=recs.length
-    ?recs.map(p=>`<tr><td>${fmtDate(p.time)}</td><td style="color:${dc[p.type]||'var(--text2)'}">${lb[p.type]||p.type}</td><td style="font-family:'JetBrains Mono',monospace">${fmtT(p.time)}</td><td style="color:var(--text3);font-size:12px">${p.note||'—'}</td><td><span class="badge ${p.source==='auto'?'badge-green':'badge-amber'}">${p.source==='auto'?'自動':'手動'}</span></td></tr>`).join('')
-    :'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">本月無打卡紀錄</td></tr>';
+  document.getElementById('recBody').innerHTML=recs.length?recs.map(p=>`<tr><td>${fmtDate(p.time)}</td><td style="color:${dc[p.type]||'var(--text2)'}">${lb[p.type]||p.type}</td><td style="font-family:'JetBrains Mono',monospace">${fmtT(p.time)}</td><td style="color:var(--text3);font-size:12px">${p.note||'—'}</td><td><span class="badge ${p.source==='auto'?'badge-green':'badge-amber'}">${p.source==='auto'?'自動':'手動'}</span></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">本月無打卡紀錄</td></tr>';
 }
-function exportMonthCSV(){
-  const mf=`${recY}-${pad(recM+1)}`;
+function exportCSV(){
+  const mf=`${rY}-${pad(rM+1)}`;
   const lb={checkin:'簽到（上班）',checkout:'離開（下班）',overtime:'申請加班',business:'公出／請假'};
   const recs=[...db.punches].filter(p=>p.time.startsWith(mf)).sort((a,b)=>new Date(a.time)-new Date(b.time));
-  const rows=[['日期','類型','時間','備註','來源']];
-  recs.forEach(p=>rows.push([fmtDate(p.time),lb[p.type]||p.type,fmtT(p.time),p.note||'',p.source==='auto'?'自動':'手動']));
-  dlFile(rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),`差勤_${recY}${pad(recM+1)}.csv`,'text/csv');
+  const rows=[['日期','類型','時間','備註','來源']];recs.forEach(p=>rows.push([fmtDate(p.time),lb[p.type]||p.type,fmtT(p.time),p.note||'',p.source==='auto'?'自動':'手動']));
+  dlFile(rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'),`差勤_${rY}${pad(rM+1)}.csv`,'text/csv');
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 月曆
-// ═══════════════════════════════════════════
-let calY=new Date().getFullYear(),calM=new Date().getMonth();
-function changeMonth(d){calM+=d;if(calM>11){calM=0;calY++;}else if(calM<0){calM=11;calY--;}renderCalendar();}
-function renderCalendar(){
+// ═══════════════════════════════════
+let cY=new Date().getFullYear(),cM=new Date().getMonth();
+function calCM(d){cM+=d;if(cM>11){cM=0;cY++;}else if(cM<0){cM=11;cY--;}renderCal();}
+function renderCal(){
   const mN=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('calTitle').textContent=`${calY} 年 ${mN[calM]}`;
-  const first=new Date(calY,calM,1).getDay(),days=new Date(calY,calM+1,0).getDate();
-  const td=new Date().getDate(),isNow=calY===new Date().getFullYear()&&calM===new Date().getMonth();
+  document.getElementById('calTitle').textContent=`${cY} 年 ${mN[cM]}`;
+  const first=new Date(cY,cM,1).getDay(),days=new Date(cY,cM+1,0).getDate(),td=new Date().getDate(),isNow=cY===new Date().getFullYear()&&cM===new Date().getMonth();
   let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
   ['日','一','二','三','四','五','六'].forEach(d=>html+=`<div style="text-align:center;padding:8px;font-size:11px;color:var(--text3);font-weight:700">${d}</div>`);
-  for(let i=0;i<first;i++) html+='<div></div>';
+  for(let i=0;i<first;i++)html+='<div></div>';
   for(let d=1;d<=days;d++){
-    const ds=`${calY}-${pad(calM+1)}-${pad(d)}`;
-    const ci=db.punches.some(p=>p.time.startsWith(ds)&&p.type==='checkin');
-    const lv=db.leaves.some(l=>l.start<=ds&&(l.end||l.start)>=ds);
-    const ot=db.overtimes.some(o=>o.date===ds);
-    const isT=isNow&&d===td;
-    let dots='';if(ci)dots+='<span style="color:var(--green)">●</span>';if(lv)dots+='<span style="color:var(--purple)">●</span>';if(ot)dots+='<span style="color:var(--amber)">●</span>';
+    const ds=`${cY}-${pad(cM+1)}-${pad(d)}`;
+    const ci=db.punches.some(p=>p.time.startsWith(ds)&&p.type==='checkin'),lv=db.leaves.some(l=>l.start<=ds&&(l.end||l.start)>=ds),ot=db.overtimes.some(o=>o.date===ds);
+    const isT=isNow&&d===td;let dots='';if(ci)dots+='<span style="color:var(--green)">●</span>';if(lv)dots+='<span style="color:var(--purple)">●</span>';if(ot)dots+='<span style="color:var(--amber)">●</span>';
     html+=`<div style="text-align:center;padding:8px 4px;border-radius:8px;background:${isT?'var(--indigo-bg)':'transparent'};border:1px solid ${isT?'var(--indigo-bdr)':'transparent'}"><div style="font-size:14px;font-weight:${isT?700:400};color:${isT?'var(--accent)':'var(--text2)'}">${d}</div><div style="font-size:10px;line-height:1.5">${dots||'&nbsp;'}</div></div>`;
   }
   html+='</div>';document.getElementById('calGrid').innerHTML=html;
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 假別調整
-// ═══════════════════════════════════════════
-function renderAdjustPage(){
-  const bal=getBalance(),ib=db.initBalance||{};
-  document.getElementById('adjGrid').innerHTML=Object.entries(LEAVE_DEFS).map(([k,v])=>{
-    const cur=bal[k],isU=cur>=9000,initVal=ib[k]!=null?ib[k]:(isU?'':cur);
-    return `<div class="adj-card"><div class="adj-info"><div class="adj-name">${v.name}</div><div class="adj-bal">餘額：<span class="c-${v.color}" id="adjbal-${k}">${fmtH(cur)}</span></div><div style="font-size:10px;color:var(--text3);margin-top:2px">${v.law}</div></div>
-      <div class="adj-controls"><button class="adj-btn" onclick="adjStep('${k}',-WORK_H)">−</button>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px"><input class="adj-input" type="number" id="adjinput-${k}" value="${isU?'':initVal}" min="0" step="0.5" placeholder="${isU?'∞':''}" oninput="adjUpdate('${k}',this.value)"><span class="adj-unit">小時</span></div>
-      <button class="adj-btn" onclick="adjStep('${k}',WORK_H)">＋</button></div></div>`;
+// ═══════════════════════════════════
+function renderAdjPage(){
+  const bal=getBal(),ib=db.initBalance||{};
+  document.getElementById('adjGrid').innerHTML=Object.entries(LD).map(([k,v])=>{
+    const cur=bal[k],isU=cur>=9000,iv=ib[k]!=null?ib[k]:(isU?'':cur);
+    return`<div class="adj-card"><div class="adj-info"><div class="adj-name">${v.name}</div><div class="adj-bal">餘額：<span class="c-${v.color}" id="ab-${k}">${fmtH(cur)}</span></div><div style="font-size:10px;color:var(--text3);margin-top:2px">${v.law}</div></div><div class="adj-ctrls"><button class="adj-btn" onclick="adjS('${k}',-WORK_H)">−</button><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><input class="adj-inp" type="number" id="ai-${k}" value="${isU?'':iv}" min="0" step="0.5" placeholder="${isU?'∞':''}" oninput="adjU('${k}',this.value)"><span class="adj-unit">小時</span></div><button class="adj-btn" onclick="adjS('${k}',WORK_H)">＋</button></div></div>`;
   }).join('');renderAdjLog();
 }
-function adjStep(k,delta){const inp=document.getElementById('adjinput-'+k);inp.value=Math.max(0,Math.round(((parseFloat(inp.value)||0)+delta)*10)/10);adjUpdate(k,inp.value);}
-function adjUpdate(k,val){
-  const h=parseFloat(val),el=document.getElementById('adjbal-'+k);
-  if(el&&!isNaN(h)){const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0);const compE=(k==='comp')?db.overtimes.reduce((s,o)=>s+(o.compH||0),0):0;el.textContent=fmtH(Math.max(h+compE-used,0));}
-}
-function saveAdjustments(){
+function adjS(k,d){const i=document.getElementById('ai-'+k);i.value=Math.max(0,Math.round(((parseFloat(i.value)||0)+d)*10)/10);adjU(k,i.value);}
+function adjU(k,v){const h=parseFloat(v),el=document.getElementById('ab-'+k);if(el&&!isNaN(h)){const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0),cE=(k==='comp')?db.overtimes.reduce((s,o)=>s+(o.compH||0),0):0;el.textContent=fmtH(Math.max(h+cE-used,0));}}
+function saveAdj(){
   if(!db.initBalance)db.initBalance={};if(!db.adjLog)db.adjLog=[];
-  const bal=getBalance();let changed=0;
-  Object.keys(LEAVE_DEFS).forEach(k=>{const inp=document.getElementById('adjinput-'+k);if(!inp)return;const nv=parseFloat(inp.value);if(isNaN(nv))return;if(db.initBalance[k]===nv)return;const before=bal[k];db.initBalance[k]=nv;const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0);const compE=(k==='comp')?db.overtimes.reduce((s,o)=>s+(o.compH||0),0):0;const after=Math.max(nv+compE-used,0);db.adjLog.push({id:Date.now()+changed,leaveType:k,before,after,initSet:nv,time:new Date().toISOString(),note:'手動調整'});changed++;});
-  if(changed>0){saveDB();toast(`已儲存 ${changed} 項調整`,'success');renderAdjustPage();}else toast('沒有變更','info');
+  const bal=getBal();let n=0;
+  Object.keys(LD).forEach(k=>{const i=document.getElementById('ai-'+k);if(!i)return;const nv=parseFloat(i.value);if(isNaN(nv))return;if(db.initBalance[k]===nv)return;const before=bal[k];db.initBalance[k]=nv;const used=db.leaves.filter(l=>l.leaveType===k).reduce((s,l)=>s+(l.hours||0),0),cE=(k==='comp')?db.overtimes.reduce((s,o)=>s+(o.compH||0),0):0,after=Math.max(nv+cE-used,0);db.adjLog.push({id:Date.now()+n,leaveType:k,before,after,time:new Date().toISOString()});n++;});
+  if(n>0){saveDB();toast(`已儲存 ${n} 項調整`,'success');renderAdjPage();}else toast('沒有變更','info');
 }
 function renderAdjLog(){
   const logs=[...(db.adjLog||[])].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,20);
-  document.getElementById('adjLogBody').innerHTML=logs.length
-    ?logs.map(l=>`<tr><td>${LEAVE_DEFS[l.leaveType]?.name||l.leaveType}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">${fmtDT(l.time)}</td><td style="color:var(--text3)">${fmtH(l.before)}</td><td style="color:var(--teal)">${fmtH(l.after)}</td><td style="color:var(--text3);font-size:12px">${l.note||'—'}</td></tr>`).join('')
-    :'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">尚無調整紀錄</td></tr>';
+  document.getElementById('adjLog').innerHTML=logs.length?logs.map(l=>`<tr><td>${LD[l.leaveType]?.name||l.leaveType}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">${fmtDT(l.time)}</td><td style="color:var(--text3)">${fmtH(l.before)}</td><td style="color:var(--teal)">${fmtH(l.after)}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">尚無調整紀錄</td></tr>';
 }
 
-// ═══════════════════════════════════════════
-// Google Drive 同步
-// 使用 Google Identity Services (GIS) + Drive REST API
-// ═══════════════════════════════════════════
-let gAccessToken = null;
-let gUser        = null;
-let gFileId      = null; // 儲存找到的檔案 ID
-
-function getClientId(){
-  return db.settings.clientId || '';
+// ═══════════════════════════════════
+// Drive 設定頁
+// ═══════════════════════════════════
+function renderDriveSettings(){
+  const i=document.getElementById('clientIdInp');if(i)i.value=db.settings.clientId||'';
+  updateDriveUI();updateLastSyncInfo();
 }
 
-function renderGdrivePage(){
-  const s=document.getElementById('autoSyncSetting');
-  if(s) s.value=db.settings.autoSync||'no';
-  updateGdriveUI();
-}
-
-function updateGdriveUI(){
-  const statusBox = document.getElementById('gdriveStatusBox');
-  const statusText= document.getElementById('gdriveStatusText');
-  const indicator = document.getElementById('gdriveIndicator');
-  const signInBtn = document.getElementById('gdriveSignInBtn');
-  const signOutBtn= document.getElementById('gdriveSignOutBtn');
-  const gmail     = document.getElementById('sidebarGmail');
-  if(!statusBox) return;
-  if(gUser){
-    statusBox.innerHTML=`<span>🟢</span> <span>已登入：${gUser}</span>`;
-    if(indicator) indicator.style.display='flex';
-    if(signOutBtn) signOutBtn.style.display='inline-flex';
-    if(signInBtn)  signInBtn.style.display='none';
-    if(gmail)      gmail.textContent=gUser;
-  } else {
-    statusBox.innerHTML=`<span>⚪</span> <span id="gdriveStatusText">尚未登入 Google 帳號</span>`;
-    if(indicator) indicator.style.display='none';
-    if(signOutBtn) signOutBtn.style.display='none';
-    if(signInBtn)  signInBtn.style.display='inline-flex';
-    if(gmail)      gmail.textContent='';
-  }
-}
-
-function gdriveSignIn(){
-  const clientId = getClientId();
-  if(!clientId){
-    showModal('需要設定 Google Client ID',
-      '請先完成以下步驟（約5分鐘）：\n\n' +
-      '1. 前往 console.cloud.google.com\n' +
-      '2. 建立新專案（名稱隨意）\n' +
-      '3. 左側選單 → API 和服務 → 程式庫\n' +
-      '4. 搜尋「Google Drive API」→ 啟用\n' +
-      '5. 左側 → 憑證 → 建立憑證 → OAuth 用戶端 ID\n' +
-      '6. 應用程式類型選「網頁應用程式」\n' +
-      '7. 已授權的 JavaScript 來源：填入您的系統網址\n' +
-      '8. 複製「用戶端 ID」\n' +
-      '9. 貼到 設定頁面 → Google Drive Client ID → 儲存',
-      null);
-    document.getElementById('modalConfirmBtn').textContent='知道了';
-    document.getElementById('modalConfirmBtn').onclick=closeModal;
-    return;
-  }
-  // 使用 Google Identity Services token client
-  const tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: GDRIVE_SCOPES,
-    callback: (resp) => {
-      if(resp.error){ toast('Google 登入失敗：'+resp.error,'error'); return; }
-      gAccessToken = resp.access_token;
-      // 取得使用者 email
-      fetch('https://www.googleapis.com/oauth2/v3/userinfo',{
-        headers:{Authorization:'Bearer '+gAccessToken}
-      }).then(r=>r.json()).then(info=>{
-        gUser = info.email || '已登入';
-        updateGdriveUI();
-        toast('已登入 '+gUser,'success');
-      }).catch(()=>{ gUser='已登入'; updateGdriveUI(); toast('Google 登入成功','success'); });
-    }
-  });
-  tokenClient.requestAccessToken();
-}
-
-function gdriveSignOut(){
-  if(gAccessToken) google.accounts.oauth2.revoke(gAccessToken, ()=>{});
-  gAccessToken=null; gUser=null; gFileId=null;
-  updateGdriveUI(); toast('已登出 Google 帳號','info');
-}
-
-// 取得或建立 Drive 資料夾與檔案
-async function getOrCreateFile(){
-  // 1. 找資料夾
-  let folderId = null;
-  const folderSearch = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`,
-    {headers:{Authorization:'Bearer '+gAccessToken}}
-  );
-  const folderData = await folderSearch.json();
-  if(folderData.files && folderData.files.length > 0){
-    folderId = folderData.files[0].id;
-  } else {
-    // 建立資料夾
-    const createFolder = await fetch('https://www.googleapis.com/drive/v3/files',{
-      method:'POST',
-      headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'application/json'},
-      body:JSON.stringify({name:GDRIVE_FOLDER,mimeType:'application/vnd.google-apps.folder'})
-    });
-    const fd = await createFolder.json();
-    folderId = fd.id;
-  }
-  // 2. 找檔案
-  const fileSearch = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FILENAME}' and '${folderId}' in parents and trashed=false&fields=files(id)`,
-    {headers:{Authorization:'Bearer '+gAccessToken}}
-  );
-  const fileData = await fileSearch.json();
-  if(fileData.files && fileData.files.length > 0){
-    return {fileId: fileData.files[0].id, folderId};
-  }
-  return {fileId: null, folderId};
-}
-
-async function gdriveSave(){
-  if(!gAccessToken){ toast('請先登入 Google 帳號','error'); return; }
-  toast('正在儲存到 Google Drive...','info');
-  try{
-    const {fileId, folderId} = await getOrCreateFile();
-    const content = JSON.stringify(db, null, 2);
-    const blob = new Blob([content],{type:'application/json'});
-    let url, method;
-    if(fileId){
-      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
-      method = 'PATCH';
-    } else {
-      // 建立新檔案（multipart）
-      const meta = JSON.stringify({name:GDRIVE_FILENAME,parents:[folderId]});
-      const form = new FormData();
-      form.append('metadata', new Blob([meta],{type:'application/json'}));
-      form.append('file', blob);
-      url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-      method = 'POST';
-      const res = await fetch(url,{method,headers:{Authorization:'Bearer '+gAccessToken},body:form});
-      if(res.ok){
-        const now = new Date().toLocaleString('zh-TW');
-        const el=document.getElementById('lastSavedTime');
-        if(el) el.textContent='最後儲存：'+now;
-        db.settings.lastGdriveSave = now; saveDB();
-        toast('已儲存到 Google Drive ✓','success');
-      } else toast('儲存失敗，請重試','error');
-      return;
-    }
-    const res = await fetch(url,{method,headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'application/json'},body:blob});
-    if(res.ok){
-      const now=new Date().toLocaleString('zh-TW');
-      const el=document.getElementById('lastSavedTime');if(el) el.textContent='最後儲存：'+now;
-      db.settings.lastGdriveSave=now; saveDB();
-      toast('已儲存到 Google Drive ✓','success');
-    } else { toast('儲存失敗','error'); }
-  }catch(e){ toast('網路錯誤：'+e.message,'error'); }
-}
-
-async function gdriveLoad(){
-  if(!gAccessToken){ toast('請先登入 Google 帳號','error'); return; }
-  showModal('確認讀取','從 Google Drive 讀取資料會覆蓋目前本機的所有資料。確定繼續？', async ()=>{
-    closeModal(); toast('正在從 Google Drive 讀取...','info');
-    try{
-      const {fileId} = await getOrCreateFile();
-      if(!fileId){ toast('Google Drive 上尚無資料，請先儲存一次','info'); return; }
-      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{
-        headers:{Authorization:'Bearer '+gAccessToken}
-      });
-      if(!res.ok){ toast('讀取失敗','error'); return; }
-      const data = await res.json();
-      db={...mkDB(),...data}; saveDB(); nav('dashboard');
-      toast('已從 Google Drive 讀取資料 ✓','success');
-    }catch(e){ toast('讀取失敗：'+e.message,'error'); }
-  });
-}
-
-function gdriveSaveSilent(){
-  if(!gAccessToken)return;
-  getOrCreateFile().then(({fileId,folderId})=>{
-    const content=JSON.stringify(db,null,2);
-    const blob=new Blob([content],{type:'application/json'});
-    if(fileId){
-      fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'application/json'},body:blob}).catch(()=>{});
-    }
-  }).catch(()=>{});
-}
-
-function saveAutoSync(){db.settings.autoSync=document.getElementById('autoSyncSetting').value;saveDB();toast('自動同步設定已儲存','success');}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 設定
-// ═══════════════════════════════════════════
-const SHIFT_LABEL={A:'班別A：08:30–12:30 ／ 13:30–17:00',B:'班別B：09:00–12:30 ／ 13:30–17:30'};
+// ═══════════════════════════════════
 function renderSettings(){
   const s=db.settings;
-  document.getElementById('settingName').value=s.name||'';
-  document.getElementById('settingEmpId').value=s.empId||'';
-  document.getElementById('settingJoinDate').value=s.joinDate||'';
-  document.getElementById('settingShift').value=s.shift||'A';
-  document.getElementById('settingCorpUrl').value=s.corpUrl||CORP_URL;
-  document.getElementById('settingAutoClose').value=s.autoClose||'yes';
-  document.getElementById('settingClientId').value=s.clientId||'';
-  updateAnnualInfo();
+  document.getElementById('sName').value=s.name||'';
+  document.getElementById('sEmpId').value=s.empId||'';
+  document.getElementById('sJoinDate').value=s.joinDate||'';
+  document.getElementById('sShift').value=s.shift||'A';
+  document.getElementById('sCorpUrl').value=s.corpUrl||CORP_URL;
+  document.getElementById('sAutoClose').value=s.autoClose||'yes';
+  updateAnnInfo();
 }
-function updateAnnualInfo(){
-  const jd=document.getElementById('settingJoinDate')?.value||db.settings.joinDate;
-  const d=annualDays(jd),h=d*WORK_H;
-  document.getElementById('annualLeaveInfo').innerHTML=jd
-    ?`到職日：${jd}　年資：${yearsStr(jd)}<br>特休：<strong style="color:var(--green)">${d} 天</strong>　換算：<strong style="color:var(--teal)">${h}h（${fmtH(h)}）</strong>`
-    :'請先設定到職日期以試算特休天數。';
-}
-function yearsStr(d){const m=(Date.now()-new Date(d))/(1000*60*60*24*365.25);return m<1?`${Math.round(m*12)}個月`:`${m.toFixed(1)}年`;}
+function updateAnnInfo(){const jd=document.getElementById('sJoinDate')?.value||db.settings.joinDate,d=annDays(jd),h=d*WORK_H;document.getElementById('annInfo').innerHTML=jd?`到職日：${jd}　年資：${yStr(jd)}<br>特休：<strong style="color:var(--green)">${d} 天</strong>　換算：<strong style="color:var(--teal)">${h}h（${fmtH(h)}）</strong>`:'請先設定到職日期。';}
+function yStr(d){const m=(Date.now()-new Date(d))/(1000*60*60*24*365.25);return m<1?`${Math.round(m*12)}個月`:`${m.toFixed(1)}年`;}
 function saveSettings(){
-  db.settings.name=document.getElementById('settingName').value;
-  db.settings.empId=document.getElementById('settingEmpId').value;
-  db.settings.joinDate=document.getElementById('settingJoinDate').value;
-  db.settings.shift=document.getElementById('settingShift').value;
-  db.settings.corpUrl=document.getElementById('settingCorpUrl').value;
-  db.settings.autoClose=document.getElementById('settingAutoClose').value;
-  db.settings.clientId=document.getElementById('settingClientId').value;
-  saveDB();
-  document.getElementById('sidebarName').textContent=db.settings.name||'請設定姓名';
-  document.getElementById('sidebarShift').textContent=SHIFT_LABEL[db.settings.shift||'A'];
-  toast('設定已儲存','success');updateAnnualInfo();
+  db.settings.name=document.getElementById('sName').value;
+  db.settings.empId=document.getElementById('sEmpId').value;
+  db.settings.joinDate=document.getElementById('sJoinDate').value;
+  db.settings.shift=document.getElementById('sShift').value;
+  db.settings.corpUrl=document.getElementById('sCorpUrl').value;
+  db.settings.autoClose=document.getElementById('sAutoClose').value;
+  saveDB();updateSbUser();toast('設定已儲存','success');updateAnnInfo();
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 匯入 / 匯出
-// ═══════════════════════════════════════════
-function exportAllData(){dlFile(JSON.stringify(db,null,2),`差勤資料_${fmtDate(new Date().toISOString())}.json`,'application/json');}
-function importData(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(imp.punches||imp.leaves){db={...mkDB(),...imp};saveDB();nav('dashboard');toast('資料匯入成功','success');}else throw 0;}catch{toast('匯入失敗','error');}};
-  r.readAsText(f);
-}
-function confirmClearData(){
-  showModal('⚠️ 清除所有資料','確定要清除所有本機資料嗎？\n（Google Drive 上的備份不受影響）',()=>{
-    const n=db.settings.name;db=mkDB();db.settings.name=n;saveDB();nav('dashboard');closeModal();toast('本機資料已清除','info');
-  });
-}
+// ═══════════════════════════════════
+function exportAll(){dlFile(JSON.stringify(db,null,2),`差勤_${CU}_${fmtDate(new Date().toISOString())}.json`,'application/json');}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.punches||d.leaves){const cid=db.settings.clientId;db={...mkDB(),...d};db.settings.clientId=cid;saveDB();nav('dashboard');toast('匯入成功','success');}else throw 0;}catch{toast('匯入失敗','error');}};r.readAsText(f);}
+function confirmClear(){showModal('⚠️ 清除資料',`確定清除「${CU}」的所有差勤資料？此操作無法復原。`,()=>{const n=db.settings.name,c=db.settings.clientId;db=mkDB();db.settings.name=n;db.settings.clientId=c;saveDB();nav('dashboard');closeModal();toast('資料已清除','info');});}
 function dlFile(c,n,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // Modal & Toast
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 let _cb=null;
-function showModal(title,sub,cb){
-  document.getElementById('modalTitle').textContent=title;
-  document.getElementById('modalSub').textContent=sub;
-  _cb=cb;
-  const btn=document.getElementById('modalConfirmBtn');
-  btn.textContent='確定';btn.onclick=()=>{if(_cb)_cb();};
-  document.getElementById('confirmModal').classList.add('open');
-}
-function closeModal(){document.getElementById('confirmModal').classList.remove('open');_cb=null;}
-function toast(msg,type='info'){
-  const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;
-  document.getElementById('toastWrap').appendChild(el);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
-  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),350);},3600);
-}
+function showModal(title,sub,cb){document.getElementById('mTitle').textContent=title;document.getElementById('mSub').textContent=sub;_cb=cb;document.getElementById('mOK').textContent='確定';document.getElementById('mOK').onclick=()=>{if(_cb)_cb();};document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');_cb=null;}
+function toast(msg,type='info'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toastWrap').appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),350);},3600);}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // 工具
-// ═══════════════════════════════════════════
-function fmtDT(iso){const d=new Date(iso);return`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;}
-function fmtT(iso){const d=new Date(iso);return`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
-function fmtDate(iso){const d=new Date(iso);return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+// ═══════════════════════════════════
+function fmtDT(i){const d=new Date(i);return`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;}
+function fmtT(i){const d=new Date(i);return`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+function fmtDate(i){const d=new Date(i);return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function pad(n){return String(n).padStart(2,'0');}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// 時鐘
+// ═══════════════════════════════════
+let _clk=false;
+function initClock(){if(_clk)return;_clk=true;const t=()=>{const d=new Date(),el=document.getElementById('topbarDate');if(el)el.textContent=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};t();setInterval(t,1000);}
+
+// ═══════════════════════════════════
 // 初始化
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 function init(){
-  const tick=()=>{const d=new Date();document.getElementById('topbarDate').textContent=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
-  tick();setInterval(tick,1000);
-  const now=new Date();
-  document.getElementById('otDate').value=fmtDate(now.toISOString());
-  document.getElementById('sidebarName').textContent=db.settings.name||'請設定姓名';
-  document.getElementById('sidebarShift').textContent=SHIFT_LABEL[db.settings.shift||'A'];
-  renderDashboard();renderTodayStatus();
+  renderAccsList();
+  const sess=getSession();
+  if(sess){const a=getAccounts();if(a[sess]){enterApp(sess);return;}else clearSession();}
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('appPage').style.display='none';
+  if(!Object.keys(getAccounts()).length)switchTab('register');
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 init();
