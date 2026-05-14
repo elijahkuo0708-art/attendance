@@ -288,8 +288,12 @@ tr:hover td{background:var(--bg3);}
     <div class="topbar">
       <button id="menuBtn" onclick="toggleSidebar()">☰</button>
       <div class="topbar-title" id="topbarTitle">首頁總覽</div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="sync-status-pill local" id="syncPill">⚪ 本機</div>
+        <button id="topbarSyncBtn" onclick="topbarSync()"
+          style="display:none;padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-bdr);background:var(--green-bg);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap">
+          ⬆ 儲存到 Drive
+        </button>
         <div class="topbar-date" id="topbarDate"></div>
       </div>
     </div>
@@ -743,10 +747,14 @@ async function enterApp(u){
   document.getElementById('appPage').style.display='block';
   updateSbUser();
   nav('dashboard');renderTodaySt();initClock();
+  _hasUnsaved=false;
 
-  // 如果有 clientId，嘗試靜默授權並自動同步
+  // 如果有 clientId，嘗試取得 token 後顯示同步提示
   if(db.settings.clientId){
     await trySilentSignIn();
+  } else {
+    // 沒設定 clientId，顯示頂部提示
+    showNodriveNotice();
   }
 }
 
@@ -780,6 +788,7 @@ async function changePwd(){
 // 解決：① Token 過期 → 自動刷新  ② 重新整理後連結消失 → email 存 localStorage
 // ═══════════════════════════════════════════════════════
 let gToken=null, gEmail=null, gTokenClient=null;
+let _hasUnsaved=false; // 是否有未儲存到 Drive 的變更
 let _tokenExpiry=0;        // Token 到期時間（ms timestamp）
 let _refreshTimer=null;    // 自動刷新計時器
 
@@ -878,7 +887,7 @@ async function trySilentSignIn(){
         await fetchGEmail();
         updateDriveUI();
         hideReconnectBanner();
-        await autoLoadFromDrive();
+        showLoadFromDrivePrompt(); // 提示用戶從 Drive 載入
       }
     });
     tc.requestAccessToken();
@@ -886,6 +895,88 @@ async function trySilentSignIn(){
     if(savedEmail) showReconnectBanner(savedEmail);
     else updateSyncPill('local');
   }
+}
+
+// 登入後顯示「從 Drive 讀取最新資料」提示（固定在頂部，需用戶確認）
+function showLoadFromDrivePrompt(){
+  let banner=document.getElementById('loadDriveBanner');
+  if(banner)banner.remove(); // 避免重複
+  banner=document.createElement('div');
+  banner.id='loadDriveBanner';
+  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9991;background:#4f46e5;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;font-size:13px;font-family:Noto Sans TC,sans-serif;box-shadow:0 2px 12px rgba(79,70,229,.3);';
+  banner.innerHTML=`
+    <span style="font-size:18px">☁️</span>
+    <span style="flex:1;font-weight:500">Google Drive 已連結（${gEmail}）。請先載入最新資料，再開始操作。</span>
+    <button onclick="doLoadFromDriveAndClose()" style="background:#fff;color:#4f46e5;border:none;border-radius:8px;padding:8px 18px;font-weight:700;cursor:pointer;font-family:Noto Sans TC,sans-serif;font-size:13px;white-space:nowrap">⬇ 載入最新資料</button>
+    <button onclick="dismissLoadBanner()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:8px 14px;cursor:pointer;font-family:Noto Sans TC,sans-serif;font-size:12px;white-space:nowrap">跳過</button>`;
+  document.body.appendChild(banner);
+}
+
+async function doLoadFromDriveAndClose(){
+  const banner=document.getElementById('loadDriveBanner');
+  if(banner){
+    const btn=banner.querySelector('button');
+    if(btn){btn.textContent='⬇ 載入中...';btn.style.opacity='0.7';}
+  }
+  showSyncOverlay('正在從 Google Drive 載入最新資料...');
+  try{
+    const{fileId,folderId}=await getOrCreateDriveFile();
+    if(fileId){
+      const ok=await ensureValidToken();if(!ok)throw new Error('token invalid');
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+gToken}});
+      if(res.ok){
+        const data=await res.json();
+        const cid=db.settings.clientId;
+        db={...mkDB(),...data};
+        db.settings.clientId=cid;
+        db._driveFileId=fileId;
+        db._driveFolderId=folderId;
+        saveUDB(CU,db);
+        updateSyncPill('synced');
+        renderCurrentPage();
+        updateSbUser();
+        updateLastSyncInfo();
+        toast('✅ 已載入 Google Drive 最新資料','success');
+      }
+    } else {
+      toast('Google Drive 上尚無資料，將使用本機資料','info');
+    }
+  }catch(e){
+    toast('載入失敗：'+e.message,'error');
+  }finally{
+    hideSyncOverlay();
+    dismissLoadBanner();
+    _hasUnsaved=false;
+    const btn=document.getElementById('topbarSyncBtn');
+    if(btn) btn.style.display=gToken?'inline-flex':'none';
+    if(gToken) markSaved();
+  }
+}
+
+function dismissLoadBanner(){
+  const b=document.getElementById('loadDriveBanner');
+  if(b)b.remove();
+  // 顯示頂部儲存按鈕（讓用戶隨時手動儲存）
+  const btn=document.getElementById('topbarSyncBtn');
+  if(btn&&gToken){
+    btn.style.display='inline-flex';
+    btn.style.background='var(--bg3)';
+    btn.style.borderColor='var(--border)';
+    btn.style.color='var(--text3)';
+    btn.textContent='☁️ 手動儲存到 Drive';
+  }
+}
+
+function showNodriveNotice(){
+  let banner=document.getElementById('nodriveBanner');
+  if(banner)return;
+  banner=document.createElement('div');
+  banner.id='nodriveBanner';
+  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9991;background:#0d9488;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;font-family:Noto Sans TC,sans-serif;';
+  banner.innerHTML=`<span style="flex:1">💡 尚未連結 Google Drive。建議設定後可跨裝置同步，不怕資料遺失。</span>
+    <button onclick="nav('drivesettings');document.getElementById('nodriveBanner').remove()" style="background:#fff;color:#0d9488;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-family:Noto Sans TC,sans-serif;font-size:12px">前往設定</button>
+    <button onclick="document.getElementById('nodriveBanner').remove()" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px">略過</button>`;
+  document.body.appendChild(banner);
 }
 
 // 顯示一鍵重連提示（固定在頂部，不擋操作）
@@ -921,7 +1012,7 @@ function gSignIn(){
       updateDriveUI();
       hideReconnectBanner();
       toast('已連結 '+gEmail,'success');
-      await autoLoadFromDrive();
+      showLoadFromDrivePrompt();
     }
   });
   gTokenClient.requestAccessToken();
@@ -1040,28 +1131,8 @@ async function autoLoadFromDrive(){
 
 // 自動儲存（每次 saveDB 後，debounce 1.5 秒）
 let _saveTimer=null;
-async function autoSaveToDrive(){
-  if(!gToken||!CU)return;
-  updateSyncPill('syncing');
-  clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(async()=>{
-    try{
-      const{fileId,folderId}=await getOrCreateDriveFile();
-      await driveUpload(folderId,fileId);
-      db._lastDriveSave=new Date().toISOString();
-      saveUDB(CU,db);
-      updateSyncPill('synced');
-      updateLastSyncInfo();
-    }catch(e){
-      updateSyncPill('local');
-      console.warn('[Drive] 自動儲存失敗：',e);
-      // 若是 token 問題，提示用戶
-      if(e.message.includes('403')||e.message.includes('token')){
-        toast('Google Drive 連線過期，請前往「☁️ Google Drive 設定」重新連結','info');
-      }
-    }
-  },1500);
-}
+// 自動儲存已停用，改用手動同步（topbarSync / manualSave）
+function autoSaveToDrive(){ /* 停用 */ }
 
 async function driveUpload(folderId,fileId){
   const ok=await ensureValidToken();if(!ok)throw new Error('token invalid');
@@ -1094,6 +1165,7 @@ async function manualSave(){
     await driveUpload(folderId,fileId);
     db._lastDriveSave=new Date().toISOString();saveUDB(CU,db);
     updateSyncPill('synced');updateLastSyncInfo();
+    markSaved();
     toast('已儲存到 Google Drive ✓','success');
   }catch(e){toast('儲存失敗：'+e.message,'error');}
   finally{hideSyncOverlay();}
@@ -1123,6 +1195,7 @@ function updateSyncPill(state){
   const p=document.getElementById('syncPill');if(!p)return;
   if(state==='synced'){p.className='sync-status-pill synced';p.textContent='🟢 已同步';}
   else if(state==='syncing'){p.className='sync-status-pill syncing';p.textContent='🔄 同步中';}
+  else if(state==='unsaved'){p.className='sync-status-pill syncing';p.textContent='🟡 有未儲存變更';}
   else{p.className='sync-status-pill local';p.textContent='⚪ 本機';}
 }
 function updateLastSyncInfo(){
@@ -1144,7 +1217,57 @@ function saveClientId(){
 function saveDB(){
   if(!CU)return;
   saveUDB(CU,db);
-  autoSaveToDrive(); // 每次儲存後自動同步
+  markUnsaved(); // 標記有未儲存的變更
+}
+
+// 標記有未儲存變更，頂部顯示橘色提醒
+function markUnsaved(){
+  _hasUnsaved=true;
+  updateSyncPill('unsaved');
+  const btn=document.getElementById('topbarSyncBtn');
+  if(btn){
+    btn.style.display='inline-flex';
+    btn.style.background='var(--amber-bg)';
+    btn.style.borderColor='var(--amber-bdr)';
+    btn.style.color='var(--amber)';
+    btn.textContent='⬆ 有未儲存變更，點此儲存到 Drive';
+  }
+}
+
+function markSaved(){
+  _hasUnsaved=false;
+  const btn=document.getElementById('topbarSyncBtn');
+  if(btn){
+    if(gToken){
+      btn.style.display='inline-flex';
+      btn.style.background='var(--green-bg)';
+      btn.style.borderColor='var(--green-bdr)';
+      btn.style.color='var(--green)';
+      btn.textContent='✓ 已同步 Drive';
+      setTimeout(()=>{
+        btn.style.background='var(--bg3)';
+        btn.style.borderColor='var(--border)';
+        btn.style.color='var(--text3)';
+        btn.textContent='☁️ 手動儲存到 Drive';
+      },3000);
+    } else {
+      btn.style.display='none';
+    }
+  }
+}
+
+// 頂部按鈕點擊：立即儲存到 Drive
+async function topbarSync(){
+  if(!gToken){
+    toast('請先前往「☁️ Google Drive 設定」連結帳號','info');
+    nav('drivesettings');
+    return;
+  }
+  const btn=document.getElementById('topbarSyncBtn');
+  if(btn){btn.textContent='⬆ 儲存中...';btn.style.opacity='0.7';}
+  await manualSave();
+  if(btn)btn.style.opacity='1';
+  markSaved();
 }
 
 // ═══════════════════════════════════
@@ -1454,7 +1577,8 @@ function calcCompSources(){
 }
 
 // 計算補休來源列表（先進先出）
-// 回傳 [{date, start, end, otType, useH}, ...] 或 null（餘額不足）
+// 回傳 [{date, start, actualEnd, otType, useH}, ...] 或 null（餘額不足）
+// actualEnd = 實際用到的結束時間（不是加班的完整結束時間）
 function calcCompSourceList(needH){
   // 已使用的補休（按加班 id 計算各筆已消耗多少）
   const usedMap={};
@@ -1466,7 +1590,7 @@ function calcCompSourceList(needH){
   // 可用加班清單（由舊到新）
   const avail=[...db.overtimes]
     .sort((a,b)=>new Date(a.date+' '+a.start)-new Date(b.date+' '+b.start))
-    .map(o=>({...o,remainH:Math.max((o.compH||0)-(usedMap[o.id]||0),0)}))
+    .map(o=>({...o,remainH:Math.max((o.compH||0)-(usedMap[o.id]||0),0),alreadyUsedH:(usedMap[o.id]||0)}))
     .filter(o=>o.remainH>0);
   const totalAvail=avail.reduce((s,o)=>s+o.remainH,0);
   if(totalAvail<needH) return null;
@@ -1474,10 +1598,28 @@ function calcCompSourceList(needH){
   for(const o of avail){
     if(left<=0) break;
     const use=Math.min(o.remainH,left);
-    sources.push({otId:o.id,date:o.date,start:o.start,end:o.end,otType:o.otType,useH:Math.round(use*10)/10});
+    // 計算實際使用的開始時間（從上次用完的位置接著算）
+    const actualStartH=t2h(o.start)+o.alreadyUsedH;
+    const actualEndH=actualStartH+use;
+    sources.push({
+      otId:o.id,
+      date:o.date,
+      start:hToTime(actualStartH),
+      end:hToTime(actualEndH),
+      otType:o.otType,
+      useH:Math.round(use*10)/10
+    });
     left=Math.round((left-use)*10)/10;
   }
   return sources;
+}
+
+// 小時數轉時間字串，例如 14.5 → "14:30"
+function hToTime(h){
+  h=((h%24)+24)%24; // 處理超過 24 小時或負數
+  const hh=Math.floor(h);
+  const mm=Math.round((h-hh)*60);
+  return pad(hh)+':'+pad(mm);
 }
 
 function submitComp(){
