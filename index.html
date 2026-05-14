@@ -364,7 +364,7 @@ tr:hover td{background:var(--bg3);}
           <div class="form-row">
             <div class="form-group"><label>假別</label>
               <select id="leaveType" onchange="onLeaveTypeChange()">
-                <option value="annual">特別休假（年假）</option><option value="comp" style="display:none" hidden>補休</option>
+                <option value="annual">特別休假（年假）</option><!-- 補休已移除，請至「加班補休」頁面申請 -->
                 <option value="personal">事假</option>
                 <option value="monthly_personal">事假（每月2次×2小時，不扣薪）</option>
                 <option value="sick">病假（一般）</option>
@@ -1941,6 +1941,13 @@ function initClock(){if(_clk)return;_clk=true;const t=()=>{const d=new Date(),el
 // 初始化
 // ═══════════════════════════════════
 function init(){
+  // 確保補休選項在所有裝置上都不出現（iOS Safari 不支援 hidden/display:none on option）
+  const leaveTypeEl=document.getElementById('leaveType');
+  if(leaveTypeEl){
+    Array.from(leaveTypeEl.options).forEach(opt=>{
+      if(opt.value==='comp') leaveTypeEl.removeChild(opt);
+    });
+  }
   renderAccsList();
   const sess=getSession();
   if(sess){const a=getAccounts();if(a[sess]){enterApp(sess);return;}else clearSession();}
