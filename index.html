@@ -365,14 +365,16 @@ tr:hover td{background:var(--bg3);}
             <div class="form-group"><label>假別</label>
               <select id="leaveType" onchange="onLeaveTypeChange()">
                 <option value="annual">特別休假（年假）</option><option value="comp" style="display:none" hidden>補休</option>
-                <option value="personal">事假</option><option value="sick">病假（一般）</option>
+                <option value="personal">事假</option>
+                <option value="monthly_personal">事假（每月2次×2小時，不扣薪）</option>
+                <option value="sick">病假（一般）</option>
                 <option value="sick_hosp">病假（住院）</option><option value="menstrual">生理假</option>
                 <option value="marriage">婚假</option><option value="paternity">陪產假</option>
                 <option value="maternity">產假</option><option value="prenatal">產檢假</option>
                 <option value="funeral3">喪假（父母/配偶/子女）8天</option>
                 <option value="funeral6">喪假（祖父母/孫子女/兄弟姊妹）6天</option>
                 <option value="funeral1">喪假（曾祖父母/配偶祖父母）1天</option>
-                <option value="public">公假</option><option value="typhoon">天災假</option><option value="unpaid">留職停薪</option><option value="monthly_personal">事假（每月2次×2小時，不扣薪）</option>
+                <option value="public">公假</option><option value="typhoon">天災假</option><option value="unpaid">留職停薪</option>
               </select>
             </div>
             <div class="form-group"><label>開始日期</label><input type="date" id="leaveStart" oninput="calcLeaveDays()"></div>
