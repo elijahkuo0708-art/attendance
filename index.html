@@ -75,6 +75,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--indigo-bg);font-weight:500;}
 .nav-icon{font-size:15px;width:20px;text-align:center;}
 .sidebar-user{padding:14px 20px;border-top:1px solid var(--border);background:var(--bg3);}
+.sidebar-sync{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);display:flex;flex-direction:column;gap:6px;}
+.sidebar-sync-btn{width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1.5px solid;font-family:'Noto Sans TC',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.sidebar-sync-btn:hover{filter:brightness(.95);}
+.ssb-save{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-bdr);}
+.ssb-load{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr);}
+.ssb-save.has-unsaved{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bdr);animation:pulse-border 1.5s infinite;}
+@keyframes pulse-border{0%,100%{opacity:1}50%{opacity:.7}}
 .user-name{font-size:13px;font-weight:600;}
 .user-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5;}
 .user-gdrive{font-size:11px;margin-top:4px;}
@@ -262,6 +269,16 @@ tr:hover td{background:var(--bg3);}
 <div class="app">
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-logo"><h1>⏱ 差勤管理</h1><p>台灣勞基法合規系統</p></div>
+    <!-- Drive 同步快捷按鈕 -->
+    <div class="sidebar-sync" id="sidebarSyncArea">
+      <button class="sidebar-sync-btn ssb-save" id="sbSaveBtn" onclick="topbarSync()">
+        ⬆ 儲存到 Drive
+      </button>
+      <button class="sidebar-sync-btn ssb-load" onclick="sidebarLoadFromDrive()">
+        ⬇ 讀取最新資料
+      </button>
+      <div id="sbSyncStatus" style="font-size:10px;color:var(--text3);text-align:center;min-height:13px"></div>
+    </div>
     <div class="nav-section">
       <div class="nav-label">主要功能</div>
       <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">🏠</span>首頁總覽</div>
@@ -749,11 +766,17 @@ async function enterApp(u){
   nav('dashboard');renderTodaySt();initClock();
   _hasUnsaved=false;
 
+  // 初始化側邊欄同步狀態
+  const sbBtn=document.getElementById('sbSaveBtn');
+  const sbSt=document.getElementById('sbSyncStatus');
+  if(sbBtn) sbBtn.textContent='⬆ 儲存到 Drive';
+  if(sbSt){sbSt.textContent=db.settings.clientId?'連結中...':'未連結 Drive';sbSt.style.color='var(--text3)';}
+
   // 如果有 clientId，嘗試取得 token 後顯示同步提示
   if(db.settings.clientId){
     await trySilentSignIn();
   } else {
-    // 沒設定 clientId，顯示頂部提示
+    if(sbSt){sbSt.textContent='未連結 Drive';sbSt.style.color='var(--text3)';}
     showNodriveNotice();
   }
 }
@@ -956,15 +979,18 @@ async function doLoadFromDriveAndClose(){
 function dismissLoadBanner(){
   const b=document.getElementById('loadDriveBanner');
   if(b)b.remove();
-  // 顯示頂部儲存按鈕（讓用戶隨時手動儲存）
+  // 頂部按鈕
   const btn=document.getElementById('topbarSyncBtn');
   if(btn&&gToken){
     btn.style.display='inline-flex';
     btn.style.background='var(--bg3)';
     btn.style.borderColor='var(--border)';
     btn.style.color='var(--text3)';
-    btn.textContent='☁️ 手動儲存到 Drive';
+    btn.textContent='☁️ 手動儲存';
   }
+  // 側邊欄狀態
+  const sbSt=document.getElementById('sbSyncStatus');
+  if(sbSt&&gToken){sbSt.textContent='已連結 Drive';sbSt.style.color='var(--green)';}
 }
 
 function showNodriveNotice(){
@@ -1220,40 +1246,80 @@ function saveDB(){
   markUnsaved(); // 標記有未儲存的變更
 }
 
-// 標記有未儲存變更，頂部顯示橘色提醒
+// 標記有未儲存變更，頂部 + 側邊欄同步顯示橘色提醒
 function markUnsaved(){
   _hasUnsaved=true;
   updateSyncPill('unsaved');
-  const btn=document.getElementById('topbarSyncBtn');
-  if(btn){
-    btn.style.display='inline-flex';
-    btn.style.background='var(--amber-bg)';
-    btn.style.borderColor='var(--amber-bdr)';
-    btn.style.color='var(--amber)';
-    btn.textContent='⬆ 有未儲存變更，點此儲存到 Drive';
+  // 頂部按鈕
+  const tbBtn=document.getElementById('topbarSyncBtn');
+  if(tbBtn){
+    tbBtn.style.display='inline-flex';
+    tbBtn.style.background='var(--amber-bg)';
+    tbBtn.style.borderColor='var(--amber-bdr)';
+    tbBtn.style.color='var(--amber)';
+    tbBtn.textContent='⬆ 有未儲存變更';
   }
+  // 側邊欄按鈕
+  const sbBtn=document.getElementById('sbSaveBtn');
+  if(sbBtn){sbBtn.classList.add('has-unsaved');sbBtn.textContent='⬆ 有變更！儲存到 Drive';}
+  const sbSt=document.getElementById('sbSyncStatus');
+  if(sbSt){sbSt.textContent='⚠ 尚未同步到雲端';sbSt.style.color='var(--amber)';}
 }
 
 function markSaved(){
   _hasUnsaved=false;
-  const btn=document.getElementById('topbarSyncBtn');
-  if(btn){
+  // 頂部按鈕
+  const tbBtn=document.getElementById('topbarSyncBtn');
+  if(tbBtn){
     if(gToken){
-      btn.style.display='inline-flex';
-      btn.style.background='var(--green-bg)';
-      btn.style.borderColor='var(--green-bdr)';
-      btn.style.color='var(--green)';
-      btn.textContent='✓ 已同步 Drive';
+      tbBtn.style.display='inline-flex';
+      tbBtn.style.background='var(--green-bg)';
+      tbBtn.style.borderColor='var(--green-bdr)';
+      tbBtn.style.color='var(--green)';
+      tbBtn.textContent='✓ 已同步';
       setTimeout(()=>{
-        btn.style.background='var(--bg3)';
-        btn.style.borderColor='var(--border)';
-        btn.style.color='var(--text3)';
-        btn.textContent='☁️ 手動儲存到 Drive';
+        tbBtn.style.background='var(--bg3)';
+        tbBtn.style.borderColor='var(--border)';
+        tbBtn.style.color='var(--text3)';
+        tbBtn.textContent='☁️ 手動儲存';
       },3000);
     } else {
-      btn.style.display='none';
+      tbBtn.style.display='none';
     }
   }
+  // 側邊欄按鈕
+  const sbBtn=document.getElementById('sbSaveBtn');
+  if(sbBtn){sbBtn.classList.remove('has-unsaved');sbBtn.textContent='✓ 已同步 Drive';}
+  const sbSt=document.getElementById('sbSyncStatus');
+  if(sbSt){
+    sbSt.textContent='✓ 已儲存到雲端';
+    sbSt.style.color='var(--green)';
+    setTimeout(()=>{
+      sbBtn.textContent='⬆ 儲存到 Drive';
+      sbSt.textContent='';
+    },3000);
+  }
+}
+
+// 側邊欄「讀取最新資料」按鈕
+async function sidebarLoadFromDrive(){
+  if(!gToken){
+    toast('請先前往「☁️ Google Drive 設定」連結帳號','info');
+    nav('drivesettings');return;
+  }
+  if(_hasUnsaved){
+    showModal('⚠️ 有未儲存的變更',
+      '您有尚未儲存到 Google Drive 的變更。讀取最新資料會覆蓋這些變更。確定要繼續讀取嗎？',
+      ()=>{closeModal();doLoadFromDriveAndClose();});
+    return;
+  }
+  doLoadFromDriveAndClose();
+}
+
+// 更新側邊欄同步狀態文字
+function updateSbSyncStatus(text, color){
+  const el=document.getElementById('sbSyncStatus');
+  if(el){el.textContent=text;el.style.color=color||'var(--text3)';}
 }
 
 // 頂部按鈕點擊：立即儲存到 Drive
